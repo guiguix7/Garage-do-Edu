@@ -2,7 +2,7 @@
 
 ![Garage do Edu](Frontend/SRC/ASSETS/IMG/garage%20do%20edu%20logo.jpg)
 
-![Status](https://img.shields.io/badge/status-em%20desenvolvimento-orange) ![Node.js](https://img.shields.io/badge/backend-Node.js-43853D?logo=node.js&logoColor=white) ![React](https://img.shields.io/badge/frontend-React-61DAFB?logo=react&logoColor=white) ![License](https://img.shields.io/badge/licenca-a%20definir-lightgrey)
+![Status](https://img.shields.io/badge/status-em%20desenvolvimento-orange) ![Node.js](https://img.shields.io/badge/backend-Node.js-43853D?logo=node.js&logoColor=white) ![React](https://img.shields.io/badge/frontend-HTML-61DAFB?logo=html&logoColor=white) ![License](https://img.shields.io/badge/licenca-a%20definir-lightgrey)
 
 ## Sumario
 - [Descricao](#descricao)
@@ -20,7 +20,7 @@
 - [Autores](#autores)
 
 ## Descricao
-Garage do Edu e uma plataforma em construcao para divulgar e gerenciar a venda de carros classicos. O projeto engloba uma landing page rica em interacao, um painel administrativo para gestao de estoque e um backend em Node.js responsavel por autenticacao e CRUD de carros e usuarios.
+Garage do Edu é uma plataforma em construcao para divulgar e gerenciar a venda de carros classicos. O projeto engloba uma landing page rica em interacao, um painel administrativo para gestao de estoque e um backend em Node.js responsavel por autenticacao e CRUD de carros e usuarios.
 
 ## Visao Geral do Estado Atual
 - ### Frontend
@@ -67,10 +67,10 @@ Projeto/
 1. **Autenticacao no frontend**: conectar formularios de login e cadastro aos endpoints de auth, armazenando o token JWT com rotas protegidas no admin.
 2. **Protecao de rotas no backend**: adicionar middleware de autenticacao JWT antes de permitir acesso a `/user` e operacoes de escrita em `/cars`.
 3. **Validacao de dados**: aplicar validacao de corpo (Joi/Zod) para cadastros de carros e usuarios.
-4. **Correcoes conhecidas**:
+4. **Correções conhecidas**:
    - Metodo `updateUser` em `BACKEND/SRC/DATA/user.js` utiliza uma variavel `password` inexistente ao recalcular hash (gera ReferenceError em updates).
    - Arquivo `.env` com credenciais reais esta versionado; migrar valores para `.env.example` e manter segredos fora do repositorio.
-5. **Integracao de dados reais no front**: substituir cards estaticos por dados retornados do backend e sincronizar modal/load more.
+5. **Integração de dados reais no front**: substituir cards estaticos por dados retornados do backend e sincronizar modal/load more.
 6. **Paginas auxiliares**: implementar `HTML/anuncio.html` para detalhes por ID e `HTML/feedback.html` consumindo futuros endpoints.
 
 ## Como Rodar Localmente
@@ -109,12 +109,12 @@ O script `tests/auth_diagnostics.mjs` executa um fluxo basico de signup/login co
 cd Projeto
 env NODE_OPTIONS=--experimental-fetch node tests/auth_diagnostics.mjs
 ```
-> Observacao: se os testes falharem por usuario duplicado, limpe a colecao `users` ou ajuste o sufixo gerado.
+> Observação: se os testes falharem por usuario duplicado, limpe a coleção `users` ou ajuste o sufixo gerado.
 
 ## Tecnologias Utilizadas
 - [Node.js](https://nodejs.org/en) e [Express](https://expressjs.com/) no backend.
 - [MongoDB](https://www.mongodb.com/) para persistencia.
-- [JWT](https://jwt.io/) + [bcrypt](https://github.com/kelektiv/node.bcrypt.js) para autenticacao.
+- [JWT](https://jwt.io/) + [bcrypt](https://github.com/kelektiv/node.bcrypt.js) para autenticação.
 - [Vite](https://vitejs.dev/) com [React](https://react.dev/) iniciado no frontend.
 - HTML5, CSS3 e JavaScript vanilla para a landing page atual.
 
