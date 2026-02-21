@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Painel de Administração do Garage do Edu">
+    <meta name="keywords" content="Garage do Edu, Administração, Painel, Oficina Mecânica, Serviços Automotivos">
+    <meta name="author" content="Dono do site: Eduardo Arcos, Desenvolvedor: Guilherme Andraz">
+    <meta property="og:title" content="Painel de Administração - Garage do Edu">
+    <meta property="og:description"
+        content="Acesse o painel de administração do Garage do Edu para gerenciar serviços, clientes e muito mais.">
+    <meta property="og:type" content="website">
+    <title>Painel de Administração - Garage do Edu</title>
+    <link rel="stylesheet" href="../CSS/admin.css">
+</head>
+
+<body data-auth-endpoint="http://localhost:3000/auth" data-guard="admin">
+    <header class="admin-header">
+        <div class="admin-header__top">
+            <div class="admin-brand">
+                <img src="../ASSETS/IMG/garage do edu logo.jpg" alt="Logo Garage do Edu" class="admin-brand__logo">
+                <div class="admin-brand__text">
+                    <span>Painel Administrador</span>
+                    <h1>Garage do Edu</h1>
+                </div>
+                <hr class="admin-brand__divider"> <!-- Linha vertical divisória -->
+            </div>
+            <!-- ???? -->
+            <div class="admin-actions">
+                <button class="admin-toggle" type="button" aria-expanded="false" aria-controls="sidebar">
+                    <span class="admin-toggle__bar"></span>
+                    <span class="admin-toggle__bar"></span>
+                    <span class="admin-toggle__bar"></span>
+                </button>
+                <div class="admin-session">
+                    <span class="admin-session__greeting">Bem-vindo</span>
+                    <strong id="admin-name" class="admin-session__name">Usuário</strong>
+                </div>
+                <nav class="admin-quick-links" aria-label="Atalhos do painel">
+                    <a href="../../index.html">Site</a>
+                    <a href="../HTML/feedback.html">Feedback</a>
+                </nav>
+                <div class="admin-profile">
+                    <button class="admin-profile__trigger" type="button" aria-haspopup="true" aria-expanded="false">
+                        <img src="../ASSETS/IMG/garage do edu logo.jpg" alt="Avatar administrador">
+                    </button>
+                    <ul class="admin-profile__menu" role="menu">
+                        <li class="submenu-item submenu-theme" role="none">
+                        <li class="menuitem"><button>Tema</button><!-- Tema Claro/Escuro (futuro)-->
+                            <label class="on-off" for="theme-toggle">
+                                <input id="theme-toggle" type="checkbox" aria-label="Alternar tema claro e escuro">
+                                <span class="slider" aria-hidden="true"></span>
+                            </label>
+                        </li>
+                        </li>
+                        <li role="menuitem"><button type="button">Sair</button></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </header>
+    <main class="admin-main">
+        <aside class="admin-sidebar" id="sidebar" aria-label="Navegação administrativa">
+            <div class="admin-sidebar__section">
+                <h2 class="admin-sidebar__title">Visão geral</h2>
+                <nav>
+                    <ul>
+                        <li><a class="is-active" href="#dashboard">Dashboard</a></li>
+                        <li><a href="#anuncios">Anúncios</a></li>
+                        <li><a href="#clientes">Clientes</a></li>
+                        <li><a href="#parceiros">Parceiros</a></li>
+                    </ul>
+                </nav>
+            </div>
+            <div class="admin-sidebar__section">
+                <h2 class="admin-sidebar__title">Gestão</h2>
+                <nav>
+                    <ul>
+                        <li><a href="#logs">Logs</a></li>
+                        <li><a href="#estatisticas">Estatísticas</a></li>
+                        <li><a href="#configuracoes">Configurações</a></li>
+                        <li><a href="#suporte">Suporte</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </aside>
+        <section class="admin-content">
+            <header class="admin-content__header" id="dashboard">
+                <div>
+                    <h2>Dashboard</h2>
+                    <p>Informações em tempo real das principais métricas do negócio.</p>
+                </div>
+            </header>
+            <div class="admin-kpis">
+                <article class="admin-card admin-card--primary">
+                    <div class="admin-card__header">
+                        <span class="admin-card__label">Anúncios ativos</span>
+                    </div>
+                    <strong class="admin-card__value">150</strong>
+                </article>
+                <article class="admin-card admin-card--accent">
+                    <div class="admin-card__header">
+                        <span class="admin-card__label">Clientes cadastrados</span>
+                    </div>
+                    <strong class="admin-card__value">320</strong>
+                </article>
+                <article class="admin-card admin-card--surface">
+                    <div class="admin-card__header">
+                        <span class="admin-card__label">Parceiros</span>
+                    </div>
+                    <strong class="admin-card__value">18</strong>
+                    <p class="admin-card__meta">Contas de parceiros ativos</p>
+                </article>
+                <article class="admin-card admin-card--surface">
+                    <div class="admin-card__header">
+                        <span class="admin-card__label">Feedback médio</span>
+                        <span class="admin-card__badge">4.9</span>
+                    </div>
+                    <strong class="admin-card__value">★★★★★</strong>
+                    <p class="admin-card__meta">126 avaliações ao todo</p>
+                </article>
+            </div>
+
+            <section class="admin-panels">
+                <article class="admin-panel" id="anuncios">
+                    <header class="admin-panel__header">
+                        <div>
+                            <h3>Últimos anúncios</h3>
+                            <p>Conteúdo recém-publicado aguardando validação.</p>
+                        </div>
+                        <button class="admin-panel__action" type="button">Ver todos</button>
+                    </header>
+                    <table class="admin-table" aria-label="Tabela de anúncios recentes">
+                        <thead>
+                            <tr>
+                                <th scope="col">Veículo</th>
+                                <th scope="col">Categoria</th>
+                                <th scope="col">Status</th>
+                                <th scope="col">Atualizado</th>
+                                <th scope="col">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Chevrolet Opala SS 1978</td>
+                                <td>Coupé</td>
+                                <td><span class="status-pill status-pill--success">Publicado</span></td>
+                                <td>há 2 horas</td>
+                                <td><button type="button" class="link-button">Editar</button></td>
+                            </tr>
+                            <tr>
+                                <td>Ford Maverick GT 1974</td>
+                                <td>Muscle</td>
+                                <td><span class="status-pill status-pill--warning">Revisão</span></td>
+                                <td>há 5 horas</td>
+                                <td><button type="button" class="link-button">Revisar</button></td>
+                            </tr>
+                            <tr>
+                                <td>Volkswagen Fusca 1968</td>
+                                <td>Clássico</td>
+                                <td><span class="status-pill status-pill--neutral">Rascunho</span></td>
+                                <td>há 1 dia</td>
+                                <td><button type="button" class="link-button">Publicar</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </article>
+                <!-- Estatísticas
+                <article class="admin-panel" id="estatisticas">
+                    <header class="admin-panel__header">
+                        <div>
+                            <h3>Desempenho mensal</h3>
+                            <p>Comparativo de visitas e leads gerados por canal.</p>
+                        </div>
+                        <div class="admin-panel__filters">
+                            <button type="button" class="link-button is-active">Visitas</button>
+                            <button type="button" class="link-button">Leads</button>
+                            <button type="button" class="link-button">Conversões</button>
+                        </div>
+                    </header>
+                    <div class="admin-chart" role="img" aria-label="Gráfico de barras ilustrativo">
+                        <div class="admin-chart__bar admin-chart__bar--active" style="height: 82%">
+                            <span>Jan</span>
+                        </div>
+                        <div class="admin-chart__bar" style="height: 64%">
+                            <span>Fev</span>
+                        </div>
+                        <div class="admin-chart__bar" style="height: 74%">
+                            <span>Mar</span>
+                        </div>
+                        <div class="admin-chart__bar" style="height: 92%">
+                            <span>Abr</span>
+                        </div>
+                        <div class="admin-chart__bar" style="height: 68%">
+                            <span>Mai</span>
+                        </div>
+                        <div class="admin-chart__bar" style="height: 88%">
+                            <span>Jun</span>
+                        </div>
+                    </div>
+                </article>
+            -->
+                <article class="admin-panel admin-panel--surface" id="logs">
+                    <header class="admin-panel__header">
+                        <div>
+                            <h3>Atividades recentes</h3>
+                            <p>Log das últimas 24hrs registrados na plataforma.</p>
+                        </div>
+                        <button class="admin-panel__action" type="button">Ver histórico completo</button>
+                    </header>
+                    <ul class="admin-timeline" aria-label="Linha do tempo de atividades">
+                        <li>
+                            <span class="admin-timeline__time">09:15</span>
+                            <div class="admin-timeline__content">
+                                <strong>Cadastro realizado</strong>
+                                <p><strong id="user">rosana123</strong> cadastrou-se na plataforma.</p>
+                            </div>
+                        </li>
+                        <li>
+                            <span class="admin-timeline__time">08:47</span>
+                            <div class="admin-timeline__content">
+                                <strong>Anúncio atualizado</strong>
+                                <p>Chevrolet Opala SS 1978 recebeu novas fotos.</p>
+                            </div>
+                        </li>
+                        <li>
+                            <span class="admin-timeline__time">Ontem</span>
+                            <div class="admin-timeline__content">
+                                <strong>Novo feedback recebido</strong>
+                                <p>andrecorsa avaliou o site.</p>
+                            </div>
+                        </li>
+                    </ul>
+                </article>
+
+                <article class="admin-panel admin-panel--surface" id="suporte">
+                    <header class="admin-panel__header">
+                        <div>
+                            <h3>Central de suporte</h3>
+                            <p>Organize as demandas abertas pelos canais de atendimento.</p>
+                        </div>
+                        <button class="admin-panel__action" type="button">Abrir chamado</button>
+                    </header>
+                    <div class="admin-support">
+                        <div class="admin-support__column">
+                            <h4>Em aberto</h4>
+                            <ul>
+                                <li>
+                                    <strong>Atualização de planos</strong>
+                                    <span>Pedido por Ricardo Martins</span>
+                                </li>
+                                <li>
+                                    <strong>Erro ao enviar fotos</strong>
+                                    <span>Reportado por Camila Freitas</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="admin-support__column">
+                            <h4>Em andamento</h4>
+                            <ul>
+                                <li>
+                                    <strong>Integração com CRM</strong>
+                                    <span>Agendado com equipe técnica</span>
+                                </li>
+                                <li>
+                                    <strong>Revisão de contrato</strong>
+                                    <span>Responsável: Gabriela</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="admin-support__column">
+                            <h4>Resolvido</h4>
+                            <ul>
+                                <li>
+                                    <strong>Atualização de banner</strong>
+                                    <span>Concluído ontem</span>
+                                </li>
+                                <li>
+                                    <strong>Recuperação de senha</strong>
+                                    <span>Concluído há 2 dias</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </article>
+            </section>
+        </section>
+    </main>
+    <script src="../SCRIPT/script.js" defer></script>
+    <script src="../SCRIPT/session-guard.js" defer></script>
+    <script src="../SCRIPT/admin.js" type="module"></script>
+</body>
+
+</html>

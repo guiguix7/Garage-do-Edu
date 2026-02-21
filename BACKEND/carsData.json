@@ -1,0 +1,17 @@
+{
+    "name": "Corsa",
+    "brand": "Chevrolet",
+    "year": 2010,
+    "color": "Prata",
+    "available": true,
+    "price": 15000,
+    "description": "Um carro compacto, econômico e ideal para o uso urbano. Perfeito para quem busca praticidade e baixo consumo de combustível.",
+    "characteristics": {
+        "engine": "1.4 Flex",
+        "transmission": "Manual",
+        "fuelType": "Flex",
+        "mileage": 85000,
+        "doors": 4,
+        "seats": 5
+    }
+}
