@@ -2,14 +2,36 @@ import jwt from 'jsonwebtoken';
 import { ObjectId } from 'mongodb';
 import { Mongo } from '../DB/db.js';
 
-export const authenticateToken = async (req, res, next) => {
+const getTokenFromRequest = (req) => {
     const authHeader = req.headers['authorization'];
-    const bearerToken = authHeader && authHeader.split(' ')[1];
-
     const cookieName = process.env.AUTH_COOKIE_NAME || 'garage_session';
     const cookieToken = req.cookies ? req.cookies[cookieName] : null;
 
-    const token = bearerToken || cookieToken;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+        return authHeader.slice('Bearer '.length).trim();
+    }
+
+    return cookieToken;
+};
+
+const sanitizeUser = (user) => {
+    if (!user) {
+        return null;
+    }
+
+    const idSource = user._id ?? user.id ?? user.userId ?? null;
+    const userId = typeof idSource?.toString === 'function' ? idSource.toString() : String(idSource || '');
+
+    return {
+        userId,
+        email: user.email,
+        username: user.username,
+        role: user.role || 'client'
+    };
+};
+
+export const authenticateToken = async (req, res, next) => {
+    const token = getTokenFromRequest(req);
 
     if (!token) {
         return res.status(401).json({
@@ -19,9 +41,27 @@ export const authenticateToken = async (req, res, next) => {
         });
     }
 
+    if (!process.env.JWT_SECRET) {
+        return res.status(500).json({
+            success: false,
+            statusCode: 500,
+            message: 'Authentication configuration error.'
+        });
+    }
+
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const user = await Mongo.db.collection('users').findOne({ _id: new ObjectId(decoded.sub) });
+        const userId = decoded?.sub || decoded?.userId || decoded?.id;
+
+        if (!userId) {
+            return res.status(401).json({
+                success: false,
+                statusCode: 401,
+                message: 'Invalid token payload.'
+            });
+        }
+
+        const user = await Mongo.db.collection('users').findOne({ _id: new ObjectId(userId) });
 
         if (!user) {
             return res.status(401).json({
@@ -31,19 +71,23 @@ export const authenticateToken = async (req, res, next) => {
             });
         }
 
-        req.user = user;
+        // Evita expor dados sensiveis no request.
+        req.user = sanitizeUser(user);
         next();
     } catch (err) {
-        return res.status(403).json({
-            statusCode: 403,
+        const isExpired = err?.name === 'TokenExpiredError';
+        const message = isExpired ? 'Token expired.' : 'Invalid token.';
+
+        return res.status(401).json({
+            statusCode: 401,
             success: false,
-            message: 'Invalid or expired token.'
+            message
         });
     }
 };
 
-export const requireRole = (requiredRole) => {
-    const roles = Array.isArray(requiredRole) ? requiredRole : [requiredRole];
+export const checkRole = (...allowedRoles) => {
+    const roles = allowedRoles.flat().filter(Boolean).map((role) => String(role).toLowerCase());
 
     return (req, res, next) => {
         if (!req.user) {
@@ -54,7 +98,9 @@ export const requireRole = (requiredRole) => {
             });
         }
 
-        if (!roles.includes(req.user.role)) {
+        const userRole = String(req.user.role || '').toLowerCase();
+
+        if (!userRole || !roles.includes(userRole)) {
             return res.status(403).json({
                 success: false,
                 statusCode: 403,
@@ -65,3 +111,5 @@ export const requireRole = (requiredRole) => {
         next();
     };
 };
+
+export const requireRole = checkRole;

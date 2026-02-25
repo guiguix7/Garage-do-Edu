@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="description" content="Criar anuncio - Garage do Edu">
+	<meta name="keywords" content="Garage do Edu, Criar anuncio, Parceiros">
+	<meta name="author" content="Dono do site: Eduardo Arcos, Desenvolvedor: Guilherme Andraz">
+	<meta property="og:title" content="Criar anuncio - Garage do Edu">
+	<meta property="og:description" content="Area para parceiros criarem anuncios.">
+	<meta property="og:type" content="website">
+	<title>Garage do Edu - Criar Anuncio</title>
+	<link rel="stylesheet" href="../CSS/style.css">
+	<link rel="stylesheet" href="../CSS/ad.css">
+</head>
+
+<body data-auth-endpoint="http://localhost:3000/auth" data-login-page="login.html"
+	data-inventory-endpoint="http://localhost:3000/cars">
+	<header>
+		<div class="header-top">
+			<div class="social-header">
+				<a href="https://www.instagram.com/garage_do_edu/" target="_blank" rel="noopener"><img
+						src="../SRC/ASSETS/IMG/instagram.png" alt="Logo do Instagram" class="logo-sociais"></a>
+				<a href="https://www.facebook.com/p/Garage-do-Edu-61550883566176/" target="_blank" rel="noopener"><img
+						src="../SRC/ASSETS/IMG/facebook.png" alt="Logo do Facebook" class="logo-sociais"></a>
+				<a href="https://www.tiktok.com/@garage_do_edu" target="_blank" rel="noopener"><img
+						src="../SRC/ASSETS/IMG/tiktok.png" alt="Logo do TikTok" class="logo-sociais"></a>
+			</div>
+			<div class="info-header">
+				<span class="info">Atendimento em Salto/SP - Retirada local | Trocas aceitas</span>
+				<div class="phone">
+					<a href="https://wa.me/5511963152153" target="_blank" rel="noopener"><img
+							src="../SRC/ASSETS/IMG/bolha-de-bate-papo.png" alt="Icone do WhatsApp"
+							class="logo-sociais"></a><span>11 96315-2153</span>
+				</div>
+			</div>
+			<div class="links-header">
+				<a href="../../index.html">Inicio</a>
+			</div>
+		</div>
+		<div class="header">
+			<div class="logo-nome">
+				<img src="../SRC/ASSETS/IMG/garage do edu logo.jpg" alt="Logo da Garage do Edu" class="logo">
+				<h1>Garage do Edu</h1>
+			</div>
+			<nav class="header-nav" aria-label="Navegacao principal">
+				<ul>
+					<li><a href="../../index.html#ads">Anuncios</a></li>
+					<li><a href="../../index.html#destaques">Parceiros</a></li>
+					<li><a href="../../index.html#vendidos">Vendidos</a></li>
+					<li><a href="../../index.html#sobre">Sobre Nos</a></li>
+					<li><a href="../../index.html#contato">Contato</a></li>
+				</ul>
+			</nav>
+		</div>
+	</header>
+	<main class="ad-create">
+		<section class="ad-create__intro">
+			<h2>Criar anuncio</h2>
+			<p>Area exclusiva para parceiros cadastrarem novos anuncios.</p>
+		</section>
+
+		<section class="ad-create__form">
+			<form data-ad-form data-auth-required="authenticated" data-auth-roles="partner, client, admin"
+				data-auth-message="E necessario estar logado para enviar anuncios.">
+				<div class="auth-message" data-ad-message hidden></div>
+				<label for="ad-title">Nome do veiculo</label>
+				<input id="ad-title" name="name" type="text" required placeholder="Ex: Ford Maverick GT 1974">
+
+				<label for="ad-brand">Marca</label>
+				<input id="ad-brand" name="brand" type="text" required placeholder="Ex: Ford">
+
+				<label for="ad-year">Ano</label>
+				<input id="ad-year" name="year" type="number" required min="1886" max="2030">
+
+				<label for="ad-price">Preco</label>
+				<input id="ad-price" name="price" type="number" required min="0" step="0.01">
+
+				<label for="ad-color">Cor</label>
+				<input id="ad-color" name="color" type="text" required placeholder="Ex: Vermelho">
+
+				<label for="ad-description">Descricao</label>
+				<textarea id="ad-description" name="description" rows="4" required></textarea>
+
+				<button type="submit">Publicar anuncio</button>
+			</form>
+		</section>
+	</main>
+	<script src="../SCRIPT/script.js" defer></script>
+</body>
+
+</html>

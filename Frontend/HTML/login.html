@@ -76,6 +76,11 @@
         </div>
         <section>
             <div class="login">
+                <div class="auth-message" data-auth-status hidden>
+                <div class="auth-actions" data-auth-actions hidden>
+                    <button type="button" data-auth-logout>Deslogar</button>
+                    <button type="button" data-auth-home>Voltar a Pagina Principal</button>
+                </div></div>
                 <form action="#" method="post" class="login-form" data-auth-form="login"
                     data-success-redirect="../../index.html">
                     <h2>Login</h2>
@@ -149,6 +154,7 @@
     </footer>
     <script src="../SCRIPT/script.js" defer></script>
     <script src="../SCRIPT/session-guard.js" defer></script>
+    <script src="../SCRIPT/login.js" defer></script>
     <script src="../SRC/AUTH/auth.js" defer></script>
 </body>
 

@@ -16,13 +16,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 	initializeInventoryModal(dom);
 	initializeUtilityInteractions(dom);
 	initializeCookieConsent(dom);
+	initializeFeedbackForm(dom);
+	initializeAdCreateForm(dom);
 });
 
 const WHATSAPP_NUMBER = '5511963152153';
 const WHATSAPP_BASE_URL = `https://wa.me/${WHATSAPP_NUMBER}`;
 const DEFAULT_WHATSAPP_MESSAGE = 'Ol%C3%A1%2C%20estou%20no%20site%20da%20Garage%20do%20Edu%20e%20quero%20falar%20com%20voc%C3%AAs.';
 const AUTH_SESSION_STORAGE_KEY = 'garage-auth-session';
+const AUTH_TOKEN_STORAGE_KEY = 'garage-auth-token';
 const COOKIE_CONSENT_STORAGE_KEY = 'garage-cookie-consent';
+const COOKIE_CONSENT_VERSION = '1';
 const AUTH_DEFAULT_ENDPOINT = 'http://localhost:3000/auth';
 const INVENTORY_DEFAULT_ENDPOINT = 'http://localhost:3000/cars';
 const INVENTORY_VISIBLE_BATCH = 4;
@@ -34,6 +38,7 @@ const CURRENCY_FORMATTER = new Intl.NumberFormat('pt-BR', {
 	currency: 'BRL'
 });
 
+// Utilitários de autenticação e sessão
 function getAuthConfig(dom) {
 	const candidate = dom.body?.dataset.authEndpoint?.trim() ?? AUTH_DEFAULT_ENDPOINT;
 	const normalized = candidate.replace(/\/$/, '');
@@ -41,15 +46,116 @@ function getAuthConfig(dom) {
 
 	return {
 		base,
+		me: `${base}/me`,
 		session: `${base}/session`,
 		logout: `${base}/logout`
 	};
 }
 
+function getLoginFallback() {
+	const candidate = document.body?.dataset.loginPage?.trim();
+	return candidate || 'HTML/login.html';
+}
+
+function parseJwt(token) {
+	if (!token || typeof token !== 'string') {
+		return null;
+	}
+	const parts = token.split('.');
+	if (parts.length !== 3) {
+		return null;
+	}
+	try {
+		const normalized = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+		const padded = normalized.padEnd(normalized.length + (4 - (normalized.length % 4)) % 4, '=');
+		const decoded = atob(padded);
+		return JSON.parse(decoded);
+	} catch (error) {
+		console.warn('Failed to decode token payload:', error);
+		return null;
+	}
+}
+
+function getStoredToken() {
+	try {
+		return window.localStorage.getItem(AUTH_TOKEN_STORAGE_KEY);
+	} catch (error) {
+		console.warn('Unable to read auth token from storage:', error);
+		return null;
+	}
+}
+
+function setStoredToken(token) {
+	try {
+		if (token) {
+			window.localStorage.setItem(AUTH_TOKEN_STORAGE_KEY, token);
+		} else {
+			window.localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
+		}
+	} catch (error) {
+		console.warn('Unable to persist auth token:', error);
+	}
+}
+
+function getUserFromToken(token) {
+	const payload = parseJwt(token);
+	if (!payload) {
+		return null;
+	}
+
+	const now = Math.floor(Date.now() / 1000);
+	if (typeof payload.exp === 'number' && payload.exp <= now) {
+		return null;
+	}
+
+	return normalizeUserPayload({
+		id: payload.sub || payload.userId || payload.id,
+		email: payload.email,
+		role: payload.role,
+		username: payload.username
+	});
+}
+
+function getUser() {
+	return getUserFromToken(getStoredToken());
+}
+
+function clearAuthState() {
+	setStoredToken(null);
+	clearStoredAuthSession();
+}
+
+async function fetchWithAuth(url, options = {}) {
+	const token = getStoredToken();
+	const headers = new Headers(options.headers || {});
+	if (token) {
+		headers.set('Authorization', `Bearer ${token}`);
+	}
+
+	const response = await fetch(url, {
+		...options,
+		credentials: 'include',
+		headers
+	});
+
+	if (response.status === 401 || response.status === 403) {
+		// Revoga sessao no front ao detectar acesso negado.
+		clearAuthState();
+		window.dispatchEvent(new CustomEvent('garage:auth-logout', { detail: { reason: 'unauthorized' } }));
+		const fallback = getLoginFallback();
+		if (fallback) {
+			window.location.assign(fallback);
+		}
+		throw new Error('Unauthorized request.');
+	}
+
+	return response;
+}
+
 function getInventoryConfig(dom) {
 	const candidate = dom.body?.dataset.inventoryEndpoint?.trim() ?? INVENTORY_DEFAULT_ENDPOINT;
 	const normalized = candidate.replace(/\/$/, '') || INVENTORY_DEFAULT_ENDPOINT;
-    const detailPage = dom.body?.dataset.inventoryDetail?.trim() || 'HTML/anuncio.html';
+	const detailPage = dom.body?.dataset.inventoryDetail?.trim() || 'HTML/anuncio.html';
 
 	return {
 		base: normalized,
@@ -123,13 +229,22 @@ function clearStoredAuthSession() {
 
 async function fetchAccountSession(authConfig) {
 	try {
-		const response = await fetch(authConfig.session, {
-			method: 'GET',
-			credentials: 'include',
-			headers: {
-				Accept: 'application/json'
-			}
-		});
+		const token = getStoredToken();
+		const endpoint = token ? authConfig.me : authConfig.session;
+		const response = token
+			? await fetchWithAuth(endpoint, {
+				method: 'GET',
+				headers: {
+					Accept: 'application/json'
+				}
+			})
+			: await fetch(endpoint, {
+				method: 'GET',
+				credentials: 'include',
+				headers: {
+					Accept: 'application/json'
+				}
+			});
 
 		if (response.status === 401 || response.status === 403) {
 			clearStoredAuthSession();
@@ -176,7 +291,18 @@ async function performLogout(authConfig) {
 		console.warn('Logout request returned an error:', error);
 		throw error;
 	} finally {
-		clearStoredAuthSession();
+		clearAuthState();
+	}
+}
+
+async function logout(authConfig) {
+	try {
+		await performLogout(authConfig);
+	} catch (error) {
+		console.warn('Logout failed:', error);
+	} finally {
+		clearAuthState();
+		window.dispatchEvent(new CustomEvent('garage:auth-logout', { detail: { reason: 'manual' } }));
 	}
 }
 
@@ -216,7 +342,8 @@ function updateAccountTriggerLabel(trigger, labelEl, defaultLabel, state) {
 	let nextLabel = baseLabel;
 
 	if (state.status === 'authenticated' && state.user?.username) {
-		nextLabel = `${baseLabel} - ${state.user.username}`;
+		const roleLabel = state.user?.role ? ` (${state.user.role})` : '';
+		nextLabel = `${baseLabel} - ${state.user.username}${roleLabel}`;
 	}
 
 	target.textContent = nextLabel;
@@ -227,6 +354,16 @@ function updateAccountTriggerLabel(trigger, labelEl, defaultLabel, state) {
 			? `Abrir menu da conta de ${state.user.username}`
 			: 'Abrir menu Minha Conta'
 	);
+}
+
+function updateUI(dom, state) {
+	const { menu, trigger, submenu, items, label } = dom.account || {};
+	if (!menu || !trigger || !submenu) {
+		return;
+	}
+	const defaultLabel = trigger.dataset.accountBaseLabel ?? label?.textContent?.trim() ?? trigger.textContent.trim();
+	updateAccountMenuItems(Array.isArray(items) ? items : [], state);
+	updateAccountTriggerLabel(trigger, label, defaultLabel, state);
 }
 
 function collectDomReferences() {
@@ -389,8 +526,8 @@ async function initializeInventoryData(dom, state) {
 		const rawCars = Array.isArray(body?.cars)
 			? body.cars
 			: Array.isArray(body?.result)
-			? body.result
-			: [];
+				? body.result
+				: [];
 
 		state.inventory.cars = rawCars;
 		state.inventory.map = new Map(rawCars.map((car, index) => [resolveCarId(car, index), car]));
@@ -1592,10 +1729,15 @@ function initializeAccountMenu(dom) {
 	const storedUser = storedSession?.user ? normalizeUserPayload(storedSession.user) : null;
 	if (storedUser?.username) {
 		setAccountState({ status: 'authenticated', user: storedUser, verified: false, source: 'storage' });
+	} else {
+		const tokenUser = getUserFromToken(getStoredToken());
+		if (tokenUser) {
+			setAccountState({ status: 'authenticated', user: tokenUser, verified: false, source: 'token' });
+		}
 	}
 
-	let closeMenu = () => {};
-	let openMenu = () => {};
+	let closeMenu = () => { };
+	let openMenu = () => { };
 
 	if (hasMenu) {
 		closeMenu = () => {
@@ -1657,16 +1799,11 @@ function initializeAccountMenu(dom) {
 			}
 			logout.disabled = true;
 			closeMenu();
-			try {
-				await performLogout(authConfig);
-			} catch (error) {
-				console.error('Failed to complete logout:', error);
-			} finally {
-				setAccountState({ status: 'anonymous', user: null, verified: true });
-				logout.disabled = false;
-				if (hasMenu) {
-					trigger.focus();
-				}
+			await logout(authConfig);
+			setAccountState({ status: 'anonymous', user: null, verified: true });
+			logout.disabled = false;
+			if (hasMenu) {
+				trigger.focus();
 			}
 		});
 	}
@@ -1804,7 +1941,7 @@ function initializeAuthGuards(dom) {
 
 		event.preventDefault();
 		event.stopPropagation();
-		const message = element.dataset.authMessage;
+		const message = element.dataset.authMessage || 'É necessário estar logado para acessar esta funcionalidade.';
 		if (message) {
 			window.alert(message);
 		}
@@ -1828,6 +1965,11 @@ function initializeAuthGuards(dom) {
 	window.addEventListener('garage:auth-state', (event) => {
 		handleAuthStateChange(event.detail);
 	});
+
+	window.addEventListener('garage:auth-logout', () => {
+		const fallback = loginFallback || 'HTML/login.html';
+		window.location.assign(fallback);
+	});
 }
 
 // Cookie consent ------------------------------------------------------------
@@ -1838,7 +1980,10 @@ function initializeCookieConsent(dom) {
 		return;
 	}
 
-	const acceptControl = dom.cookie?.accept instanceof HTMLElement ? dom.cookie.accept : null;
+	const acceptControls = Array.from(container.querySelectorAll('[data-cookie-accept]'));
+	const configureControl = container.querySelector('[data-cookie-configure]');
+	const rejectControl = container.querySelector('[data-cookie-reject]');
+	const panel = container.querySelector('[data-cookie-panel]');
 	const pageBody = dom.body instanceof HTMLElement ? dom.body : document.body;
 
 	const readStoredConsent = () => {
@@ -1848,7 +1993,7 @@ function initializeCookieConsent(dom) {
 				return null;
 			}
 			const parsed = JSON.parse(raw);
-			if (parsed && typeof parsed === 'object' && parsed.accepted === true) {
+			if (parsed && typeof parsed === 'object' && parsed.status && parsed.version === COOKIE_CONSENT_VERSION) {
 				return parsed;
 			}
 		} catch (error) {
@@ -1872,29 +2017,57 @@ function initializeCookieConsent(dom) {
 		pageBody.dataset.cookieConsent = state;
 	};
 
-	const hideBanner = (source) => {
+	const hideBanner = (source, status) => {
 		container.hidden = true;
 		container.classList.remove('is-visible');
 		container.setAttribute('aria-hidden', 'true');
-		setBodyState('accepted');
-		dispatchConsentEvent({ status: 'accepted', source });
+		setBodyState(status);
+		dispatchConsentEvent({ status, source });
+		if (status === 'accepted') {
+			try {
+				window.dispatchEvent(new CustomEvent('garage:analytics-allowed', { detail: { source } }));
+			} catch (error) {
+				console.warn('Failed to notify analytics consent:', error);
+			}
+		}
 	};
 
-	const storeConsent = () => {
+	const storeConsent = (payload) => {
 		try {
-			const payload = {
-				accepted: true,
-				acceptedAt: new Date().toISOString()
-			};
-			window.localStorage.setItem(COOKIE_CONSENT_STORAGE_KEY, JSON.stringify(payload));
+			window.localStorage.setItem(COOKIE_CONSENT_STORAGE_KEY, JSON.stringify({
+				...payload,
+				version: COOKIE_CONSENT_VERSION
+			}));
 		} catch (error) {
 			console.warn('Failed to persist cookie consent decision:', error);
 		}
 	};
 
 	const acceptConsent = (source) => {
-		storeConsent();
-		hideBanner(source);
+		storeConsent({
+			status: 'accepted',
+			decidedAt: new Date().toISOString(),
+			preferences: { analytics: true, marketing: true }
+		});
+		hideBanner(source, 'accepted');
+	};
+
+	const rejectConsent = (source) => {
+		storeConsent({
+			status: 'rejected',
+			decidedAt: new Date().toISOString(),
+			preferences: { analytics: false, marketing: false }
+		});
+		hideBanner(source, 'rejected');
+	};
+
+	const saveCustomConsent = (source) => {
+		storeConsent({
+			status: 'custom',
+			decidedAt: new Date().toISOString(),
+			preferences: { analytics: false, marketing: false }
+		});
+		hideBanner(source, 'custom');
 	};
 
 	const showBanner = () => {
@@ -1907,15 +2080,192 @@ function initializeCookieConsent(dom) {
 
 	const storedConsent = readStoredConsent();
 	if (storedConsent) {
-		hideBanner('storage');
+		hideBanner('storage', storedConsent.status || 'accepted');
 		return;
 	}
 
 	showBanner();
-
-	if (acceptControl instanceof HTMLElement) {
-		acceptControl.addEventListener('click', () => acceptConsent('interaction'));
+	if (panel instanceof HTMLElement) {
+		panel.hidden = true;
+		panel.setAttribute('aria-hidden', 'true');
 	}
+
+	acceptControls.forEach((control) => {
+		control.addEventListener('click', () => {
+			if (panel instanceof HTMLElement && panel.contains(control)) {
+				saveCustomConsent('interaction');
+				return;
+			}
+			acceptConsent('interaction');
+		});
+	});
+
+	if (rejectControl instanceof HTMLElement) {
+		rejectControl.addEventListener('click', () => rejectConsent('interaction'));
+	}
+	if (configureControl instanceof HTMLElement) {
+		configureControl.addEventListener('click', () => {
+			if (!(panel instanceof HTMLElement)) {
+				return;
+			}
+			const nextState = panel.hidden;
+			panel.hidden = !nextState;
+			panel.setAttribute('aria-hidden', nextState ? 'false' : 'true');
+			container.classList.toggle('is-configuring', nextState);
+		});
+	}
+}
+
+// Feedback form -------------------------------------------------------------
+
+function getFeedbackConfig(dom) {
+	const candidate = dom.body?.dataset.feedbackEndpoint?.trim();
+	return {
+		base: candidate || 'http://localhost:3000/feedback'
+	};
+}
+
+function initializeFeedbackForm(dom) {
+	const form = document.querySelector('[data-feedback-form]');
+	if (!(form instanceof HTMLFormElement)) {
+		return;
+	}
+
+	const messageBox = form.querySelector('[data-feedback-message]');
+	const { base } = getFeedbackConfig(dom);
+
+	const showMessage = (text, variant = 'info') => {
+		if (!messageBox) {
+			return;
+		}
+		messageBox.textContent = text;
+		messageBox.hidden = false;
+		messageBox.dataset.variant = variant;
+	};
+
+	form.addEventListener('submit', async (event) => {
+		event.preventDefault();
+		if (messageBox) {
+			messageBox.hidden = true;
+		}
+
+		const ratingValue = Number(form.querySelector('[name="rating"]')?.value || 0);
+		const messageValue = String(form.querySelector('[name="message"]')?.value || '').trim();
+		if (!ratingValue || ratingValue < 1 || ratingValue > 5) {
+			showMessage('Selecione uma nota valida.', 'error');
+			return;
+		}
+		if (messageValue.length < 10 || messageValue.length > 1000) {
+			showMessage('O comentario deve ter entre 10 e 1000 caracteres.', 'error');
+			return;
+		}
+
+		try {
+			const response = await fetchWithAuth(base, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					Accept: 'application/json'
+				},
+				body: JSON.stringify({ rating: ratingValue, message: messageValue })
+			});
+
+			if (!response.ok) {
+				const payload = await response.json().catch(() => null);
+				const errorMessage = payload?.message || 'Nao foi possivel enviar o feedback.';
+				showMessage(errorMessage, 'error');
+				return;
+			}
+
+			form.reset();
+			showMessage('Feedback enviado com sucesso.', 'success');
+		} catch (error) {
+			showMessage('Falha ao enviar feedback. Tente novamente.', 'error');
+		}
+	});
+}
+
+// Ad create form ------------------------------------------------------------
+
+function initializeAdCreateForm(dom) {
+	const form = document.querySelector('[data-ad-form]');
+	if (!(form instanceof HTMLFormElement)) {
+		return;
+	}
+
+	const messageBox = form.querySelector('[data-ad-message]');
+	const inventoryConfig = getInventoryConfig(dom);
+
+	const showMessage = (text, variant = 'info') => {
+		if (!messageBox) {
+			return;
+		}
+		messageBox.textContent = text;
+		messageBox.hidden = false;
+		messageBox.dataset.variant = variant;
+	};
+
+	form.addEventListener('submit', async (event) => {
+		event.preventDefault();
+		if (messageBox) {
+			messageBox.hidden = true;
+		}
+
+		const user = getUser();
+		if (!user) {
+			showMessage('E necessario estar logado para enviar anuncios.', 'error');
+			return;
+		}
+
+		const payload = {
+			name: String(form.querySelector('[name="name"]')?.value || '').trim(),
+			brand: String(form.querySelector('[name="brand"]')?.value || '').trim(),
+			year: Number(form.querySelector('[name="year"]')?.value || 0),
+			price: Number(form.querySelector('[name="price"]')?.value || 0),
+			color: String(form.querySelector('[name="color"]')?.value || '').trim(),
+			description: String(form.querySelector('[name="description"]')?.value || '').trim()
+		};
+
+		if (!payload.name || !payload.brand || !payload.color || !payload.description) {
+			showMessage('Preencha todos os campos obrigatorios.', 'error');
+			return;
+		}
+		if (!payload.year || payload.year < 1886) {
+			showMessage('Informe um ano valido.', 'error');
+			return;
+		}
+		if (payload.price < 0) {
+			showMessage('Informe um preco valido.', 'error');
+			return;
+		}
+
+		const isPartner = user.role === 'partner' || user.role === 'admin';
+		const endpoint = isPartner ? inventoryConfig.base : `${inventoryConfig.base}/pending`;
+		const successMessage = isPartner ? 'Publicado com sucesso.' : 'Anuncio enviado para revisao.';
+
+		try {
+			const response = await fetchWithAuth(endpoint, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					Accept: 'application/json'
+				},
+				body: JSON.stringify(payload)
+			});
+
+			if (!response.ok) {
+				const data = await response.json().catch(() => null);
+				const errorMessage = data?.message || 'Nao foi possivel enviar o anuncio.';
+				showMessage(errorMessage, 'error');
+				return;
+			}
+
+			form.reset();
+			showMessage(successMessage, 'success');
+		} catch (error) {
+			showMessage('Falha ao enviar anuncio. Tente novamente.', 'error');
+		}
+	});
 }
 
 // Theme toggle ---------------------------------------------------------------

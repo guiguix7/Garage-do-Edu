@@ -26,13 +26,100 @@ const adminState = {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
-	hydrateSession();
-	initSidebarToggle();
-	initProfileMenu();
-	initNavHighlighting();
-	initFilterGroups();
-	initThemeToggle();
+	verifyAdminAccess()
+		.then((allowed) => {
+			if (!allowed) {
+				return;
+			}
+			hydrateSession();
+			initSidebarToggle();
+			initProfileMenu();
+			initNavHighlighting();
+			initFilterGroups();
+			initThemeToggle();
+			bindLogout();
+		})
+		.catch((error) => {
+			console.warn('Falha ao validar acesso admin.', error);
+			redirectToLogin('admin_access_denied');
+		});
 });
+
+async function verifyAdminAccess() {
+	const tokenKey = 'garage-auth-token';
+	const sessionKey = 'garage-auth-session';
+	const body = document.body;
+	const authEndpoint = (body?.dataset.authEndpoint || 'http://localhost:3000/auth').replace(/\/$/, '');
+
+	const token = (() => {
+		try {
+			return window.localStorage.getItem(tokenKey);
+		} catch (error) {
+			return null;
+		}
+	})();
+
+	if (!token) {
+		clearAuthState(tokenKey, sessionKey);
+		redirectToLogin('admin_access_denied');
+		return false;
+	}
+
+	try {
+		const response = await fetch(`${authEndpoint}/me`, {
+			method: 'GET',
+			headers: {
+				Accept: 'application/json',
+				Authorization: `Bearer ${token}`
+			},
+			credentials: 'include'
+		});
+
+		if (!response.ok) {
+			clearAuthState(tokenKey, sessionKey);
+			redirectToLogin('admin_access_denied');
+			return false;
+		}
+
+		const payload = await response.json();
+		if (!payload?.user || payload.user.role !== 'admin') {
+			clearAuthState(tokenKey, sessionKey);
+			redirectToLogin('admin_access_denied');
+			return false;
+		}
+
+		return true;
+	} catch (error) {
+		clearAuthState(tokenKey, sessionKey);
+		redirectToLogin('admin_access_denied');
+		return false;
+	}
+}
+
+function clearAuthState(tokenKey, sessionKey) {
+	try {
+		window.localStorage.removeItem(tokenKey);
+		window.sessionStorage.removeItem(sessionKey);
+	} catch (error) {
+		console.warn('Nao foi possivel limpar credenciais locais.', error);
+	}
+}
+
+function redirectToLogin(reason) {
+	const query = reason ? `?error=${encodeURIComponent(reason)}` : '';
+	window.location.replace(`login.html${query}`);
+}
+
+function bindLogout() {
+	const button = document.querySelector('[data-admin-logout]');
+	if (!button) {
+		return;
+	}
+	button.addEventListener('click', () => {
+		clearAuthState('garage-auth-token', 'garage-auth-session');
+		redirectToLogin('logged_out');
+	});
+}
 
 function hydrateSession() {
 	const nameField = document.querySelector(SELECTORS.adminName);

@@ -2,8 +2,12 @@ import express from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { config } from 'dotenv';
+import rateLimit from 'express-rate-limit';
+import { z } from 'zod';
 import { Mongo } from '../DB/db.js';
 import { authenticateToken } from '../MIDDLEWARE/auth.js';
+import { validateBody } from '../MIDDLEWARE/validate.js';
+import { writeAuditLog } from '../HELPERS/audit.js';
 
 config(); // ensure JWT_SECRET is loaded before runtime checks
 
@@ -68,28 +72,53 @@ if (!process.env.JWT_SECRET) {
     throw new Error('JWT_SECRET is required in environment variables!');
 }
 
-// Helper: validar email (básico)
-const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+const loginLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 8,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: {
+        success: false,
+        statuscode: 429,
+        message: 'Too many login attempts. Please try again later.'
+    }
+});
+
+const loginSchema = z.object({
+    email: z.string().trim().min(3).email(),
+    password: z.string().min(8)
+});
+
+const registerSchema = z.object({
+    username: z.string().trim().min(2).max(40),
+    email: z.string().trim().min(3).email(),
+    password: z.string().min(8)
+});
+
+const createToken = (user) =>
+    jwt.sign(
+        {
+            sub: user._id.toString(),
+            email: user.email,
+            role: user.role || 'client'
+        },
+        process.env.JWT_SECRET,
+        { expiresIn: '7d' }
+    );
+
+const normalizeEmail = (email) => email.trim().toLowerCase();
+const normalizeUsername = (username) => username.trim();
 
 // ROTA DE REGISTRO
-router.post('/signup', async (req, res) => {
+const handleRegister = async (req, res) => {
     const { username, email, password } = req.body;
-
-    // Validação
-    if (!username || !email || !password) {
-        return res.status(400).json({ success: false, statuscode: 400, message: 'Username, email and password are required.' });
-    }
-    if (!isValidEmail(email)) {
-        return res.status(400).json({ success: false, statuscode: 400, message: 'Invalid email format.' });
-    }
-    if (password.length < 8) {
-        return res.status(400).json({ success: false, statuscode: 400, message: 'Password must be at least 8 characters.' });
-    }
+    const normalizedEmail = normalizeEmail(email);
+    const normalizedUsername = normalizeUsername(username);
 
     try {
         // Verificar se já existe
         const existing = await Mongo.db.collection(collectionName).findOne({
-            $or: [{ email }, { username }]
+            $or: [{ email: normalizedEmail }, { username: normalizedUsername }]
         });
         if (existing) {
             return res.status(409).json({ success: false, statuscode: 409, message: 'Username or email already in use.' });
@@ -100,19 +129,19 @@ router.post('/signup', async (req, res) => {
 
         // Inserir usuário
         const result = await Mongo.db.collection(collectionName).insertOne({
-            username,
-            email,
+            username: normalizedUsername,
+            email: normalizedEmail,
             password: hashedPassword,
             role: 'client',
             createdAt: new Date(),
         });
 
         // Gerar token (sem dados sensíveis!)
-        const token = jwt.sign(
-            { sub: result.insertedId.toString(), email, username },
-            process.env.JWT_SECRET,
-            { expiresIn: '7d' }
-        );
+        const token = createToken({
+            _id: result.insertedId,
+            email: normalizedEmail,
+            role: 'client'
+        });
 
         sendAuthResponse(res, 201, {
             success: true,
@@ -121,10 +150,18 @@ router.post('/signup', async (req, res) => {
             token,
             user: sanitizeUser({
                 _id: result.insertedId,
-                username,
-                email,
+                username: normalizedUsername,
+                email: normalizedEmail,
                 role: 'client'
             })
+        });
+
+        void writeAuditLog({
+            action: 'user_register',
+            actorId: result.insertedId.toString(),
+            actorRole: 'client',
+            targetId: result.insertedId.toString(),
+            req
         });
 
     } catch (err) {
@@ -135,22 +172,18 @@ router.post('/signup', async (req, res) => {
             message: 'Internal server error.'
         });
     }
-});
+};
+
+router.post('/register', validateBody(registerSchema), handleRegister);
+router.post('/signup', validateBody(registerSchema), handleRegister);
 
 // ROTA DE LOGIN
-router.post('/login', async (req, res) => {
+router.post('/login', loginLimiter, validateBody(loginSchema), async (req, res) => {
     const { email, password } = req.body;
-
-    if (!email || !password) {
-        return res.status(400).json({
-            success: false,
-            statuscode: 400,
-            message: 'Email and password are required.'
-        });
-    }
+    const normalizedEmail = normalizeEmail(email);
 
     try {
-        const user = await Mongo.db.collection(collectionName).findOne({ email });
+        const user = await Mongo.db.collection(collectionName).findOne({ email: normalizedEmail });
         if (!user) {
             return res.status(401).json({
                 success: false,
@@ -168,11 +201,7 @@ router.post('/login', async (req, res) => {
             });
         }
 
-        const token = jwt.sign(
-            { sub: user._id.toString(), email: user.email, username: user.username },
-            process.env.JWT_SECRET,
-            { expiresIn: '7d' }
-        );
+        const token = createToken(user);
 
         sendAuthResponse(res, 200, {
             success: true,
@@ -182,20 +211,31 @@ router.post('/login', async (req, res) => {
             user: sanitizeUser(user)
         });
 
+        void writeAuditLog({
+            action: 'user_login',
+            actorId: user._id.toString(),
+            actorRole: user.role || 'client',
+            targetId: user._id.toString(),
+            req
+        });
+
     } catch (err) {
         console.error('Login error:', err);
         res.status(500).json({ success: false, message: 'Internal server error.' });
     }
 });
 
-router.get('/session', authenticateToken, (req, res) => {
+const handleSession = (req, res) => {
     const safeUser = sanitizeUser(req.user);
     return res.status(200).json({
         success: true,
         statuscode: 200,
         user: safeUser
     });
-});
+};
+
+router.get('/me', authenticateToken, handleSession);
+router.get('/session', authenticateToken, handleSession);
 
 router.post('/logout', (req, res) => {
     const cookieOptions = getCookieOptions();

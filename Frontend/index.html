@@ -79,13 +79,13 @@
                             <li class="submenu-item" role="none" data-account-item data-account-visible="authenticated"
                                 data-account-role="partner">
                                 <a role="menuitem" href="HTML/ad_create.html" data-auth-required="authenticated"
-                                    data-auth-roles="partner" data-auth-fallback="Frontend/HTML/login.html">Meus Anúncios</a>
+                                    data-auth-roles="partner" data-auth-fallback="HTML/login.html">Meus Anúncios</a>
                             </li>
                             <!-- Admin -->
                             <li class="submenu-item" role="none" data-account-item data-account-visible="authenticated"
                                 data-account-role="admin">
                                 <a role="menuitem" href="HTML/admin.html" data-auth-required="authenticated"
-                                    data-auth-roles="admin" data-auth-fallback="Frontend/HTML/login.html">Painel
+                                    data-auth-roles="admin" data-auth-fallback="HTML/login.html">Painel
                                     Administrativo</a>
                             </li>
                             <!-- Always visible -->
@@ -250,7 +250,7 @@
                 </div>
             </div>
             <div class="car-grid" data-inventory-grid>
-                <p class="inventory-status" data-inventory-status role="status" aria-live="polite" hidden></p>
+                <p class="inventory-empty" data-inventory-status role="status" aria-live="polite" hidden></p>
                 <template id="inventory-card-template" data-car-card-template>
                     <article class="car-card" data-reveal>
                         <img data-card-image alt="" loading="lazy" data-car-trigger>
@@ -313,7 +313,7 @@
                 <article class="feedback-card" data-reveal>
                     <div class="star-rating">
                         <span class="stars-media">★★★★★</span>
-                        <span class="stars-media-conter">0.0</span>
+                        <span class="stars-media-counter">0.0</span>
                     </div>
                     <p class="feedback-text">Exemplo de texto do feedback</p>
                     <span class="author">Exemplo do autor do feedback</span>
@@ -321,7 +321,7 @@
                 <article class="feedback-card" data-reveal>
                     <div class="star-rating">
                         <span class="stars-media">★★★★★</span>
-                        <span class="stars-media-conter">0.0</span>
+                        <span class="stars-media-counter">0.0</span>
                     </div>
                     <p class="feedback-text">Exemplo de texto do feedback</p>
                     <span class="author">Exemplo do autor do feedback</span>
@@ -329,7 +329,7 @@
                 <article class="feedback-card" data-reveal>
                     <div class="star-rating">
                         <span class="stars-media">★★★★★</span>
-                        <span class="stars-media-conter">0.0</span>
+                        <span class="stars-media-counter">0.0</span>
                     </div>
                     <p class="feedback-text">Exemplo de texto do feedback</p>
                     <span class="author">Exemplo do autor do feedback</span>
@@ -338,7 +338,7 @@
             <div class="feedback-cta" data-reveal>
                 <!-- Se usuario estiver logado, levar pra pagina de avaliação, caso contrário, levar para login -->
                 <a href="HTML/login.html" class="cta ghost" data-auth-required="authenticated"
-                    data-auth-destination="Frontend/HTML/feedback.html#avaliar" data-auth-fallback="Frontend/HTML/login.html"
+                    data-auth-destination="HTML/feedback.html#avaliar" data-auth-fallback="HTML/login.html"
                     data-auth-message="É necessário estar logado para enviar uma avaliação.">Quero avaliar a
                     experiência</a>
             </div>
@@ -451,7 +451,7 @@
     <!-- Modal de detalhes do carro -->
     <div class="car-modal" data-car-modal aria-hidden="true" role="dialog" aria-labelledby="car-modal-title">
         <div class="car-modal__backdrop" data-car-close aria-hidden="true"></div>
-        <div class="car-modal__dialog" data-car-modal-dialog>
+        <div class="car-modal__dialog" data-car-modal-dialog tabindex="-1">
             <button class="car-modal__close" type="button" data-car-close aria-label="Fechar detalhes">×</button>
             <div class="car-modal__media">
                 <img src="https://placehold.co/960x640?text=Imagem+indisponivel" alt="Imagem do veículo selecionado"
@@ -476,7 +476,15 @@
     <div class="cookie-consent" data-cookie-consent aria-live="polite" role="region" hidden>
         <p>Usamos cookies para melhorar sua experiência. Ao continuar navegando, você concorda com nossa <a
                 href="HTML/help.html#privacidade">Política de Privacidade</a>.</p>
-        <button type="button" data-cookie-accept aria-label="Aceitar cookies">Aceitar</button>
+        <div class="cookie-consent__actions">
+            <button type="button" data-cookie-accept aria-label="Aceitar cookies">Aceitar</button>
+            <button type="button" data-cookie-configure aria-label="Configurar cookies">Configurar</button>
+            <button type="button" data-cookie-reject aria-label="Rejeitar cookies">Rejeitar</button>
+        </div>
+        <div class="cookie-consent__panel" data-cookie-panel hidden>
+            <p>Cookies essenciais sempre ativos. Cookies de analise e marketing sao opcionais.</p>
+            <button type="button" data-cookie-accept>Salvar preferencias</button>
+        </div>
     </div>
 
     <!-- Fim do Main & Começo do Footer -->
@@ -526,7 +534,6 @@
                 <div class="grid">
                     <span>© 2026 Garage do Edu. Todos os direitos reservados.</span>
                     <span>Desenvolvido por Guilherme Andraz.</span>
-                    <a href="HTML/admin.html">Administrador</a> <!-- Retirar mais tarde -->
                 </div>
             </div>
         </div>

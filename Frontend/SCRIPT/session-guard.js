@@ -82,7 +82,6 @@
         }
 
         if ((isLoginGuard || isSignupGuard) && state.status === 'authenticated' && state.verified === true) {
-            redirectTo('../../index.html');
             return;
         }
 

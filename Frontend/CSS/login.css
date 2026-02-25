@@ -351,6 +351,30 @@ section {
     color: #ffb3b3;
 }
 
+.auth-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 12px 0 4px;
+}
+
+.auth-actions button {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    padding: 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.auth-actions button:hover,
+.auth-actions button:focus-visible {
+    background: rgba(183, 144, 85, 0.2);
+    transform: translateY(-1px);
+}
+
 :root[data-theme="light"] .auth-message.is-success {
     background: rgba(37, 211, 102, 0.12);
     border-color: rgba(37, 211, 102, 0.45);

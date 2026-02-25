@@ -26,11 +26,13 @@ Garage do Edu e uma plataforma em construcao para divulgar e gerenciar a venda d
 - ### Frontend
   - Landing page estatico-dinamica com filtros de inventario, modal de detalhes e links de WhatsApp configurados manualmente.
   - Assets organizados em CSS, HTML e SCRIPT; arquitetura React (Vite) iniciada porem ainda sem implementacao em `SRC/`.
-  - Paginas auxiliares (login, cadastro, admin) com layout definido, mas sem integracao real com API.
+  - Paginas auxiliares (login, cadastro, admin, feedback, criar anuncio) integradas ao backend com fetch e guardas de autenticacao.
 - ### Backend
   - API Express com rotas para autenticacao (`/auth`), usuarios (`/user`) e carros (`/cars`).
   - Integracao com MongoDB utilizando driver oficial; respostas padronizadas em helpers.
-  - Middleware de seguranca basico (rate limit para auth e CORS configuravel) ja presente.
+  - Middleware de seguranca (rate limit, helmet, CORS configuravel, validacao Zod) e modo manutencao ja presentes.
+  - Auditoria de acoes sensiveis registrada em `audit_logs`.
+  - Feedback publico (GET) e protegido (POST) com media e paginacao.
 
 ## Arquitetura do Projeto
 ```
@@ -56,22 +58,22 @@ Projeto/
 ```
 
 ## Funcionalidades
-- ✅ Cadastro e login via `/auth/signup` e `/auth/login`, com validacao basica de email e senha e emissao de JWT.
-- ✅ CRUD de carros (listar, criar, atualizar, excluir) via `/cars`, inclusive filtro `/cars/availables`.
-- ✅ Lista de usuarios com exclusao e (parcial) atualizacao via `/user`.
-- ✅ Landing page com filtro de inventario, modal de detalhes e links para WhatsApp pre-preenchidos.
-- ⚠️ Painel admin com UI funcional porem desconectado do backend.
+- ✅ Cadastro e login via `/auth/register` e `/auth/login`, com validacao de email/senha, JWT e `/auth/me`.
+- ✅ CRUD de carros com status (active/pending) e filtro `/cars/availables`.
+- ✅ Fluxo duplo de anuncios: parceiros publicam direto em `/cars`, clientes enviam para `/cars/pending`.
+- ✅ Aprovacao admin via `/cars/pending/:id/approve`.
+- ✅ Feedback: POST protegido e GET publico com media e paginacao.
+- ✅ Lista de usuarios com exclusao/atualizacao, logs e modo manutencao via `/user`.
+- ✅ Landing page com filtro de inventario, modal de detalhes e links WhatsApp pre-preenchidos.
 - ⚠️ Scripts React (`SRC/`) ainda vazios; implementacao atual usa HTML/JS tradicional.
 
 ## Backlog Prioritario
-1. **Autenticacao no frontend**: conectar formularios de login e cadastro aos endpoints de auth, armazenando o token JWT com rotas protegidas no admin.
-2. **Protecao de rotas no backend**: adicionar middleware de autenticacao JWT antes de permitir acesso a `/user` e operacoes de escrita em `/cars`.
-3. **Validacao de dados**: aplicar validacao de corpo (Joi/Zod) para cadastros de carros e usuarios.
-4. **Correcoes conhecidas**:
-   - Metodo `updateUser` em `BACKEND/SRC/DATA/user.js` utiliza uma variavel `password` inexistente ao recalcular hash (gera ReferenceError em updates).
-   - Arquivo `.env` com credenciais reais esta versionado; migrar valores para `.env.example` e manter segredos fora do repositorio.
-5. **Integracao de dados reais no front**: substituir cards estaticos por dados retornados do backend e sincronizar modal/load more.
-6. **Paginas auxiliares**: implementar `HTML/anuncio.html` para detalhes por ID e `HTML/feedback.html` consumindo futuros endpoints.
+1. **Dashboard admin**: conectar UI do admin a `/user/stats`, `/user/logs` e moderacao de anuncios pendentes.
+2. **Feedback publico**: consumir `GET /feedback` na landing e exibir media dinamica.
+3. **Pagina anuncio.html**: montar pagina de detalhes por ID consumindo `GET /cars/:id`.
+4. **Observabilidade**: padronizar logs e adicionar alertas para falhas de conexao com MongoDB.
+5. **Automacao de seeds**: popular colecoes com `carsData.json` e usuarios de teste.
+6. **React (Vite)**: migrar gradualmente a landing para `Frontend/SRC/`.
 
 ## Como Rodar Localmente
 Antes de iniciar, instale [Node.js](https://nodejs.org) (>= 18) e configure o MongoDB (Atlas ou local).
@@ -95,6 +97,14 @@ AUTH_COOKIE_SAMESITE=lax
 CORS_ORIGINS=http://localhost:5173
 ```
 
+Endpoints novos relevantes:
+- `GET /feedback` (publico, media e paginacao)
+- `POST /feedback` (protegido, validacao e anti-duplicidade)
+- `POST /cars/pending` (cliente, fila de revisao)
+- `PUT /cars/pending/:id/approve` (admin, aprova)
+- `GET /user/logs` (admin, paginado)
+- `POST /user/maintenance` (admin, liga/desliga manutencao)
+
 ### Frontend
 ```bash
 cd Projeto/Frontend
@@ -115,6 +125,8 @@ env NODE_OPTIONS=--experimental-fetch node tests/auth_diagnostics.mjs
 - [Node.js](https://nodejs.org/en) e [Express](https://expressjs.com/) no backend.
 - [MongoDB](https://www.mongodb.com/) para persistencia.
 - [JWT](https://jwt.io/) + [bcrypt](https://github.com/kelektiv/node.bcrypt.js) para autenticacao.
+- [Zod](https://zod.dev/) para validacao de input.
+- [Helmet](https://helmetjs.github.io/) para headers de seguranca.
 - [Vite](https://vitejs.dev/) com [React](https://react.dev/) iniciado no frontend.
 - HTML5, CSS3 e JavaScript vanilla para a landing page atual.
 

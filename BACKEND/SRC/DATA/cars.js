@@ -13,7 +13,7 @@ export default class CarDataAccess {
     async getCars() {
         const result = await Mongo.db
             .collection(collectionName)
-            .find({})
+            .find({ status: 'active' })
             .toArray();
 
         console.log('Get Request', result.length, 'cars found.');
@@ -25,7 +25,7 @@ export default class CarDataAccess {
     async getAvailableCars() {
         const result = await Mongo.db
             .collection(collectionName)
-            .find({ available: true })
+            .find({ available: true, status: 'active' })
             .toArray();
 
         console.log('Get Request', result.length, 'available cars found.');
@@ -40,7 +40,19 @@ export default class CarDataAccess {
 
         const document = await Mongo.db
             .collection(collectionName)
-            .findOne({ _id: new ObjectId(carId) });
+            .findOne({ _id: new ObjectId(carId), status: 'active' });
+
+        return document;
+    }
+
+    async getPendingCarById(carId) {
+        if (!ObjectId.isValid(carId)) {
+            return null;
+        }
+
+        const document = await Mongo.db
+            .collection(collectionName)
+            .findOne({ _id: new ObjectId(carId), status: 'pending' });
 
         return document;
     }
@@ -57,6 +69,9 @@ export default class CarDataAccess {
 
     // Update a car by ID //
     async updateCar(carId, updateData) {
+        if (!ObjectId.isValid(carId)) {
+            return 0;
+        }
         const result = await Mongo.db
             .collection(collectionName)
             .updateOne({ _id: new ObjectId(carId) }, { $set: updateData });
@@ -67,6 +82,9 @@ export default class CarDataAccess {
 
     // Delete a car by ID //
     async deleteCar(carId) {
+        if (!ObjectId.isValid(carId)) {
+            return 0;
+        }
         const result = await Mongo.db
             .collection(collectionName)
             .deleteOne({ _id: new ObjectId(carId) });

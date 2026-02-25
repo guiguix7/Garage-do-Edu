@@ -1,3 +1,37 @@
+.auth-message {
+    margin-bottom: 12px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    font-size: 0.95rem;
+}
+
+.auth-message[data-variant="success"] {
+    background: rgba(37, 211, 102, 0.15);
+    border-color: rgba(37, 211, 102, 0.55);
+    color: #c3f3d6;
+}
+
+.auth-message[data-variant="error"] {
+    background: rgba(216, 0, 0, 0.2);
+    border-color: rgba(216, 0, 0, 0.6);
+    color: #ffb3b3;
+}
+/* Cookie consent */
+.cookie-consent__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.cookie-consent__panel {
+    margin-top: 12px;
+    padding: 12px;
+    border: 1px solid #d2b277;
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.6);
+}
 /* Cores Predefinidas */
 :root {
     --primary-color: #000000;

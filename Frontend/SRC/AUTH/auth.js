@@ -1,9 +1,11 @@
 // SCRIPT EM DESENVOLVIMENTO - NÃO INCLUIR EM PRODUÇÃO //
-
+// Este script é responsável por gerenciar a autenticação de usuários no frontend, incluindo login e cadastro. Ele se comunica com a API backend para realizar as operações de autenticação e mantém o estado da sessão do usuário usando sessionStorage. O script também lida com mensagens de sucesso e erro, além de fornecer feedback visual durante as operações de autenticação. Certifique-se de que os formulários de login e cadastro estejam corretamente configurados com os atributos data-auth-form="login" e data-auth-form="signup", respectivamente, para que este script funcione corretamente.
+// Projeto/Frontend/SRC/AUTH/auth.js
 'use strict';
 
 (() => {
     const storageKey = 'garage-auth-session';
+    const tokenStorageKey = 'garage-auth-token';
     const body = document.body;
     if (!body) {
         console.log('Elemento <body> não encontrado. O script de autenticação não foi inicializado.');
@@ -110,6 +112,18 @@
         }
     };
 
+    const persistToken = (token) => {
+        try {
+            if (token) {
+                window.localStorage.setItem(tokenStorageKey, token);
+            } else {
+                window.localStorage.removeItem(tokenStorageKey);
+            }
+        } catch (error) {
+            console.warn('Não foi possível salvar o token localmente:', error);
+        }
+    };
+
     const scheduleRedirect = (form) => {
         const redirectTo = form.dataset.successRedirect;
         if (!redirectTo) {
@@ -138,6 +152,7 @@
             try {
                 const result = await request('/login', { email, password });
                 persistSession(result);
+                persistToken(result.token);
                 showMessage(form, 'success', 'Login realizado com sucesso. Redirecionando...');
                 scheduleRedirect(form);
             } catch (error) {
@@ -171,8 +186,9 @@
 
             setLoadingState(form, true);
             try {
-                const result = await request('/signup', { username, email, password });
+                const result = await request('/register', { username, email, password });
                 persistSession(result);
+                persistToken(result.token);
                 showMessage(form, 'success', 'Cadastro concluído. Redirecionando...');
                 form.reset();
                 scheduleRedirect(form);

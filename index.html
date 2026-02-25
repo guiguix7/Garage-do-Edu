@@ -23,23 +23,24 @@
     <!-- Ligação com ícones (futuro) -->
 </head>
 
-    <body data-auth-endpoint="http://localhost:3000/auth" data-inventory-endpoint="http://localhost:3000/cars" data-inventory-detail="Frontend/HTML/anuncio.html" data-login-page="Frontend/HTML/login.html">
+<body data-auth-endpoint="http://localhost:3000/auth" data-inventory-endpoint="http://localhost:3000/cars"
+    data-inventory-detail="Frontend/HTML/anuncio.html" data-login-page="Frontend/HTML/login.html">
     <header>
         <!-- Topo do Header -->
         <div class="header-top"> <!-- Definir cor e mudar layout (futuro) -->
             <div class="social-header">
                 <!-- Link de redes sociais (futuro) -->
                 <a href="https://www.instagram.com/garage_do_edu/" target="_blank"><img
-                    src="Frontend/SRC/ASSETS/IMG/instagram.png" alt="Logo do Instagram " class="logo-sociais"></a>
+                        src="Frontend/SRC/ASSETS/IMG/instagram.png" alt="Logo do Instagram " class="logo-sociais"></a>
                 <a href="https://www.facebook.com/p/Garage-do-Edu-61550883566176/" target="_blank"><img
-                    src="Frontend/SRC/ASSETS/IMG/facebook.png" alt="Logo do Facebook" class="logo-sociais"></a>
-                <a href="https://www.tiktok.com/@garage_do_edu" target="_blank"><img src="Frontend/SRC/ASSETS/IMG/tiktok.png"
-                    alt="Logo do TikTok" class="logo-sociais"></a>
+                        src="Frontend/SRC/ASSETS/IMG/facebook.png" alt="Logo do Facebook" class="logo-sociais"></a>
+                <a href="https://www.tiktok.com/@garage_do_edu" target="_blank"><img
+                        src="Frontend/SRC/ASSETS/IMG/tiktok.png" alt="Logo do TikTok" class="logo-sociais"></a>
             </div>
             <div class="info-header">
                 <span class="info">Atendimento em Salto/SP - Retirada local | Trocas aceitas</span>
                 <div class="phone">
-                        <a href="https://wa.me/5511963152153" target="_blank"><img
+                    <a href="https://wa.me/5511963152153" target="_blank"><img
                             src="Frontend/SRC/ASSETS/IMG/bolha-de-bate-papo.png" alt="Icone do WhatsApp"
                             class="logo-sociais"></a><span>11
                         96315-2153</span>
@@ -70,22 +71,24 @@
                             </li>
                             <!-- Authenticated users -->
                             <li class="submenu-item" role="none" data-account-item data-account-visible="authenticated">
-                                <button type="button" role="menuitem" data-account-logout>Logout</button>
+                                <a href="#"><button type="button" role="menuitem" data-account-logout
+                                        id="logout-button">Logout</button></a>
                             </li>
                             <li class="submenu-item" role="none" data-account-item data-account-visible="authenticated">
-                                <a role="menuitem" href="Frontend/HTML/login.html" data-auth-required="authenticated">Minha Conta</a>
+                                <a role="menuitem" href="#" data-auth-required="authenticated">Minha Conta</a>
                             </li>
-                            <!-- Partner -->
+                            <!-- Partner's Account Only -->
                             <li class="submenu-item" role="none" data-account-item data-account-visible="authenticated"
                                 data-account-role="partner">
-                                <a role="menuitem" href="Frontend/HTML/ad_create.html" data-auth-required="authenticated"
-                                    data-auth-roles="partner" data-auth-fallback="Frontend/HTML/login.html">Meus Anúncios</a>
+                                <a role="menuitem" href="Frontend/HTML/ad_create.html"
+                                    data-auth-required="authenticated" data-auth-roles="partner"
+                                    data-auth-fallback="Frontend/HTML/login.html">Meus Anúncios</a>
                             </li>
-                            <!-- Admin -->
+                            <!-- Admin's Account Only -->
                             <li class="submenu-item" role="none" data-account-item data-account-visible="authenticated"
                                 data-account-role="admin">
                                 <a role="menuitem" href="Frontend/HTML/admin.html" data-auth-required="authenticated"
-                                    data-auth-roles="admin" data-auth-fallback="Frontend/HTML/login.html">Painel
+                                    data-auth-roles="admin">Painel
                                     Administrativo</a>
                             </li>
                             <!-- Always visible -->
@@ -107,23 +110,17 @@
         </div>
         <!-- Header principal -->
         <div class="header">
-            <!-- Arrumar Logo e navegação principal -->
+            <!-- Arrumar Cor -->
             <div class="logo-nome">
                 <img src="Frontend/SRC/ASSETS/IMG/garage do edu logo.jpg" alt="Logo da Garage do Edu" class="logo">
-                <h1>Garage do Edu</h1><!-- Mudar a fonte (futuro) -->
+                <h1>Garage do Edu</h1>
             </div>
-            <!-- Criação das paginas (Futuro) -->
             <nav class="header-nav" aria-label="Navegação principal">
                 <ul>
-                    <!-- Adcionar animação -->
-                    <li><a href="#ads">Anuncios</a></li>
-                    <!-- Adcionar animação, mostar a section class="plans-price" -->
+                    <li><a href="#ads">Anúncios</a></li>
                     <li><a href="#destaques">Parceiros</a></li>
-                    <!-- Adcionar animação, mostrar a section class="sold-showcase" -->
                     <li><a href="#vendidos">Vendidos</a></li>
-                    <!-- Adcionar animação, mostrar a section class="about"  -->
                     <li><a href="#sobre">Sobre Nós</a></li>
-                    <!-- Linkagem com whatsapp -->
                     <li><a href="#contato">Contato</a></li>
                 </ul>
             </nav>
@@ -176,7 +173,7 @@
         <!-- A seção de anuncios deve mostrar 4 anuncios predefinidos (se houver), caso o cliente clique em "Ver detalhes" deve expandir e mostrar todos os anuncios ativos -->
         <section id="estoque" class="inventory">
             <div class="section-heading" data-reveal>
-                <h2>Anuncios</h2>
+                <h2>Anúncios</h2>
                 <p>Dê uma olhadas nas nossas jóias.</p>
             </div>
             <div class="inventory-filters" role="group" aria-label="Filtrar anúncios" id="ads">
@@ -270,7 +267,7 @@
                 encontrado com esses filtros. Tente ajustar a busca ou categoria.</p>
         </section>
         <!-- Seção com os destaques -->
-        <!-- Alterar destaques & Adcionar Animações (futuro) -->
+        <!-- Alterar destaques & Adicionar Animações (futuro) -->
         <section id="destaques" class="highlights">
             <div class="section-heading" data-reveal>
                 <h2>Por que escolher a Garage do Edu?</h2>
@@ -313,7 +310,7 @@
                 <article class="feedback-card" data-reveal>
                     <div class="star-rating">
                         <span class="stars-media">★★★★★</span>
-                        <span class="stars-media-conter">0.0</span>
+                        <span class="stars-media-counter">0.0</span>
                     </div>
                     <p class="feedback-text">Exemplo de texto do feedback</p>
                     <span class="author">Exemplo do autor do feedback</span>
@@ -321,7 +318,7 @@
                 <article class="feedback-card" data-reveal>
                     <div class="star-rating">
                         <span class="stars-media">★★★★★</span>
-                        <span class="stars-media-conter">0.0</span>
+                        <span class="stars-media-counter">0.0</span>
                     </div>
                     <p class="feedback-text">Exemplo de texto do feedback</p>
                     <span class="author">Exemplo do autor do feedback</span>
@@ -329,7 +326,7 @@
                 <article class="feedback-card" data-reveal>
                     <div class="star-rating">
                         <span class="stars-media">★★★★★</span>
-                        <span class="stars-media-conter">0.0</span>
+                        <span class="stars-media-counter">0.0</span>
                     </div>
                     <p class="feedback-text">Exemplo de texto do feedback</p>
                     <span class="author">Exemplo do autor do feedback</span>
@@ -338,7 +335,8 @@
             <div class="feedback-cta" data-reveal>
                 <!-- Se usuario estiver logado, levar pra pagina de avaliação, caso contrário, levar para login -->
                 <a href="Frontend/HTML/login.html" class="cta ghost" data-auth-required="authenticated"
-                    data-auth-destination="Frontend/HTML/feedback.html#avaliar" data-auth-fallback="Frontend/HTML/login.html"
+                    data-auth-destination="Frontend/HTML/feedback.html#avaliar"
+                    data-auth-fallback="Frontend/HTML/login.html"
                     data-auth-message="É necessário estar logado para enviar uma avaliação.">Quero avaliar a
                     experiência</a>
             </div>
@@ -451,7 +449,7 @@
     <!-- Modal de detalhes do carro -->
     <div class="car-modal" data-car-modal aria-hidden="true" role="dialog" aria-labelledby="car-modal-title">
         <div class="car-modal__backdrop" data-car-close aria-hidden="true"></div>
-        <div class="car-modal__dialog" data-car-modal-dialog>
+        <div class="car-modal__dialog" data-car-modal-dialog tabindex="-1">
             <button class="car-modal__close" type="button" data-car-close aria-label="Fechar detalhes">×</button>
             <div class="car-modal__media">
                 <img src="https://placehold.co/960x640?text=Imagem+indisponivel" alt="Imagem do veículo selecionado"
@@ -474,9 +472,17 @@
     </div>
     <!-- Extras (Cookies) -->
     <div class="cookie-consent" data-cookie-consent aria-live="polite" role="region" hidden>
-                <p>Usamos cookies para melhorar sua experiência. Ao continuar navegando, você concorda com nossa <a
+        <p>Usamos cookies para melhorar sua experiência. Ao continuar navegando, você concorda com nossa <a
                 href="Frontend/HTML/help.html#privacidade">Política de Privacidade</a>.</p>
-        <button type="button" data-cookie-accept aria-label="Aceitar cookies">Aceitar</button>
+        <div class="cookie-consent__actions">
+            <button type="button" data-cookie-accept aria-label="Aceitar cookies">Aceitar</button>
+            <button type="button" data-cookie-configure aria-label="Configurar cookies">Configurar</button>
+            <button type="button" data-cookie-reject aria-label="Rejeitar cookies">Rejeitar</button>
+        </div>
+        <div class="cookie-consent__panel" data-cookie-panel hidden>
+            <p>Cookies essenciais sempre ativos. Cookies de análise e marketing são opcionais.</p>
+            <button type="button" data-cookie-accept>Salvar preferências</button>
+        </div>
     </div>
 
     <!-- Fim do Main & Começo do Footer -->

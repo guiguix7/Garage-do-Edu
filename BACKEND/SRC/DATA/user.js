@@ -25,6 +25,9 @@ export default class UserDataAccess {
 
     // Delete a user by ID //
     async deleteUser(userId) {
+        if (!ObjectId.isValid(userId)) {
+            return 0;
+        }
         const result = await Mongo.db
             .collection(collectionName)
             .deleteOne({ _id: new ObjectId(userId) });
@@ -41,6 +44,9 @@ export default class UserDataAccess {
 
     // Update a user by ID //
     async updateUser(userId, updateData) {
+        if (!ObjectId.isValid(userId)) {
+            return 0;
+        }
         const updateFields = { ...updateData };
 
         if (updateData.password) {

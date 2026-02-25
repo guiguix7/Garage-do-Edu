@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="description" content="Feedback - Garage do Edu">
+	<meta name="keywords" content="Garage do Edu, Feedback, Avaliacao, Carros Classicos">
+	<meta name="author" content="Dono do site: Eduardo Arcos, Desenvolvedor: Guilherme Andraz">
+	<meta property="og:title" content="Feedback - Garage do Edu">
+	<meta property="og:description" content="Deixe sua avaliacao sobre a experiencia com a Garage do Edu.">
+	<meta property="og:type" content="website">
+	<title>Garage do Edu - Feedback</title>
+	<link rel="stylesheet" href="../CSS/style.css">
+	<link rel="stylesheet" href="../CSS/help.css">
+</head>
+
+<body data-auth-endpoint="http://localhost:3000/auth" data-login-page="login.html"
+	data-feedback-endpoint="http://localhost:3000/feedback">
+	<header>
+		<div class="header-top">
+			<div class="social-header">
+				<a href="https://www.instagram.com/garage_do_edu/" target="_blank" rel="noopener"><img
+						src="../SRC/ASSETS/IMG/instagram.png" alt="Logo do Instagram" class="logo-sociais"></a>
+				<a href="https://www.facebook.com/p/Garage-do-Edu-61550883566176/" target="_blank" rel="noopener"><img
+						src="../SRC/ASSETS/IMG/facebook.png" alt="Logo do Facebook" class="logo-sociais"></a>
+				<a href="https://www.tiktok.com/@garage_do_edu" target="_blank" rel="noopener"><img
+						src="../SRC/ASSETS/IMG/tiktok.png" alt="Logo do TikTok" class="logo-sociais"></a>
+			</div>
+			<div class="info-header">
+				<span class="info">Atendimento em Salto/SP - Retirada local | Trocas aceitas</span>
+				<div class="phone">
+					<a href="https://wa.me/5511963152153" target="_blank" rel="noopener"><img
+							src="../SRC/ASSETS/IMG/bolha-de-bate-papo.png" alt="Icone do WhatsApp"
+							class="logo-sociais"></a><span>11 96315-2153</span>
+				</div>
+			</div>
+			<div class="links-header">
+				<a href="../../index.html">Inicio</a>
+			</div>
+		</div>
+		<div class="header">
+			<div class="logo-nome">
+				<img src="../SRC/ASSETS/IMG/garage do edu logo.jpg" alt="Logo da Garage do Edu" class="logo">
+				<h1>Garage do Edu</h1>
+			</div>
+			<nav class="header-nav" aria-label="Navegacao principal">
+				<ul>
+					<li><a href="../../index.html#ads">Anuncios</a></li>
+					<li><a href="../../index.html#destaques">Parceiros</a></li>
+					<li><a href="../../index.html#vendidos">Vendidos</a></li>
+					<li><a href="../../index.html#sobre">Sobre Nos</a></li>
+					<li><a href="../../index.html#contato">Contato</a></li>
+				</ul>
+			</nav>
+		</div>
+	</header>
+	<main class="help-page">
+		<section class="help-hero">
+			<h2>Compartilhe sua experiencia</h2>
+			<p>Seu feedback ajuda a melhorar o atendimento da Garage do Edu.</p>
+		</section>
+
+		<section class="help-content">
+			<form class="help-form" data-feedback-form data-auth-required="authenticated"
+				data-auth-message="E necessario estar logado para enviar uma avaliacao.">
+				<div class="auth-message" data-feedback-message hidden></div>
+				<label for="feedback-rating">Nota (1 a 5)</label>
+				<select id="feedback-rating" name="rating" required>
+					<option value="">Selecione</option>
+					<option value="5">5 - Excelente</option>
+					<option value="4">4 - Muito bom</option>
+					<option value="3">3 - Bom</option>
+					<option value="2">2 - Regular</option>
+					<option value="1">1 - Ruim</option>
+				</select>
+
+				<label for="feedback-message">Comentario</label>
+				<textarea id="feedback-message" name="message" rows="5" required
+					placeholder="Conte como foi sua experiencia."></textarea>
+
+				<button type="submit">Enviar avaliacao</button>
+			</form>
+		</section>
+	</main>
+	<script src="../SCRIPT/script.js" defer></script>
+</body>
+
+</html>
