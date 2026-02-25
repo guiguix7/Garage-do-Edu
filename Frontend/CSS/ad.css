@@ -420,6 +420,60 @@ html[data-theme="light"] .contact-card p {
 	align-self: flex-start;
 }
 
+/* Criacao de anuncio */
+.ad-create {
+	max-width: 1100px;
+	margin: 0 auto;
+	padding: 48px clamp(16px, 6vw, 64px) 96px;
+	display: flex;
+	flex-direction: column;
+	gap: 32px;
+}
+
+.ad-create__intro {
+	text-align: center;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.ad-create__form form {
+	display: grid;
+	gap: 16px;
+	background: rgba(0, 0, 0, 0.35);
+	border-radius: 20px;
+	padding: 32px;
+	border: 1px solid rgba(183, 144, 85, 0.25);
+}
+
+.ad-create__form label {
+	font-weight: 600;
+	color: rgba(255, 255, 255, 0.85);
+}
+
+.ad-create__form input,
+.ad-create__form textarea {
+	width: 100%;
+	padding: 12px 16px;
+	border-radius: 12px;
+	border: 1px solid rgba(183, 144, 85, 0.35);
+	background: rgba(0, 0, 0, 0.45);
+	color: var(--text-color);
+}
+
+.ad-create__form button {
+	justify-self: flex-start;
+	padding: 12px 24px;
+	border-radius: 999px;
+	border: 1px solid rgba(183, 144, 85, 0.6);
+	background: linear-gradient(135deg, rgba(210, 178, 119, 0.28), rgba(210, 178, 119, 0.6));
+	color: var(--text-color);
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.06rem;
+	cursor: pointer;
+}
+
 @media (max-width: 1100px) {
 	.ad-hero {
 		grid-template-columns: minmax(0, 1fr);
@@ -445,6 +499,10 @@ html[data-theme="light"] .contact-card p {
 	.ad-page {
 		padding: 32px 18px 80px;
 		gap: 48px;
+	}
+
+	.ad-create {
+		padding: 32px 18px 72px;
 	}
 
 	.ad-hero__facts {
@@ -473,6 +531,10 @@ html[data-theme="light"] .contact-card p {
 }
 
 @media (max-width: 520px) {
+	.ad-create__form form {
+		padding: 24px;
+	}
+
 	.ad-hero__price-value {
 		font-size: 2.2rem;
 	}

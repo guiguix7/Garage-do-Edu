@@ -43,8 +43,36 @@
                 </div>
             </div>
             <div class="links-header">
-                <a href="../../index.html#plans-grid">Anuncie Já</a>
                 <a href="../../index.html">Inicio</a>
+                <div class="dropdown-header">
+                    <div class="myacount">
+                        <button class="account-trigger" type="button" aria-haspopup="true" aria-expanded="false"
+                            data-account-base-label="Minha Conta">
+                            <img src="../SRC/ASSETS/IMG/forma-removebg-preview.png" alt="Icone de seta pra baixo"
+                                class="icone-seta"><span data-account-label>Minha Conta</span>
+                        </button>
+                        <ul class="submenu" role="menu" data-account-menu>
+                            <li class="submenu-item" role="none" data-account-item data-account-visible="authenticated"
+                                data-account-role="partner">
+                                <a role="menuitem" href="ad_create.html">Meus Anúncios</a>
+                            </li>
+                            <li class="submenu-item" role="none" data-account-item data-account-visible="authenticated"
+                                data-account-role="admin">
+                                <a role="menuitem" href="admin.html">Painel Administrativo</a>
+                            </li>
+                            <li class="submenu-item submenu-configs" role="none" data-account-item>
+                                <a href="../../index.html#configs" role="menuitem">Configurações</a>
+                            </li>
+                            <li class="submenu-item submenu-theme" role="none" data-account-item>
+                                <span class="submenu-label">Tema</span>
+                                <label class="on-off" for="theme-toggle">
+                                    <input id="theme-toggle" type="checkbox" aria-label="Alternar tema claro e escuro">
+                                    <span class="slider" aria-hidden="true"></span>
+                                </label>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="header">
@@ -77,10 +105,11 @@
         <section>
             <div class="login">
                 <div class="auth-message" data-auth-status hidden>
-                <div class="auth-actions" data-auth-actions hidden>
-                    <button type="button" data-auth-logout>Deslogar</button>
-                    <button type="button" data-auth-home>Voltar a Pagina Principal</button>
-                </div></div>
+                    <div class="auth-actions" data-auth-actions hidden>
+                        <button type="button" data-auth-logout>Deslogar</button>
+                        <button type="button" data-auth-home>Voltar a Pagina Principal</button>
+                    </div>
+                </div>
                 <form action="#" method="post" class="login-form" data-auth-form="login"
                     data-success-redirect="../../index.html">
                     <h2>Login</h2>

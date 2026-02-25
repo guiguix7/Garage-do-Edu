@@ -17,12 +17,72 @@
     border-color: rgba(216, 0, 0, 0.6);
     color: #ffb3b3;
 }
+
 /* Cookie consent */
+.cookie-consent {
+    position: fixed;
+    left: 24px;
+    right: 24px;
+    bottom: 24px;
+    z-index: 300;
+    background: rgba(17, 17, 17, 0.92);
+    border: 1px solid rgba(210, 178, 119, 0.6);
+    border-radius: 16px;
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    box-shadow: 0 18px 36px rgba(0, 0, 0, 0.4);
+    max-width: 880px;
+    margin: 0 auto;
+}
+
+.cookie-consent[hidden] {
+    display: none;
+}
+
+.cookie-consent p {
+    color: rgba(255, 255, 255, 0.85);
+    line-height: 1.5;
+}
+
+.cookie-consent a {
+    color: var(--border-color);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.cookie-consent a:hover,
+.cookie-consent a:focus-visible {
+    text-decoration: underline;
+    outline: none;
+}
+
 .cookie-consent__actions {
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
     margin-top: 12px;
+}
+
+.cookie-consent__actions button {
+    border: 1px solid rgba(210, 178, 119, 0.7);
+    background: rgba(183, 144, 85, 0.15);
+    color: var(--text-color);
+    padding: 10px 18px;
+    border-radius: 999px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+}
+
+.cookie-consent__actions button:hover,
+.cookie-consent__actions button:focus-visible {
+    background: rgba(210, 178, 119, 0.4);
+    border-color: var(--border-color);
+    transform: translateY(-1px);
+    outline: none;
 }
 
 .cookie-consent__panel {
@@ -32,6 +92,20 @@
     border-radius: 8px;
     background: rgba(0, 0, 0, 0.6);
 }
+
+@media (max-width: 768px) {
+    .cookie-consent {
+        left: 16px;
+        right: 16px;
+        bottom: 16px;
+        padding: 16px;
+    }
+
+    .cookie-consent__actions {
+        justify-content: center;
+    }
+}
+
 /* Cores Predefinidas */
 :root {
     --primary-color: #000000;
@@ -1825,6 +1899,64 @@ body.modal-open {
     margin-top: 24px;
 }
 
+@media (max-width: 1200px) {
+    .hero-overlay {
+        max-width: 480px;
+        margin-left: 6%;
+    }
+
+    .footer-column {
+        margin: 0 24px;
+    }
+}
+
+@media (max-width: 1024px) {
+    .header {
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .header-nav ul {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .inventory,
+    .highlights,
+    .feedback,
+    .plans,
+    .sold-showcase,
+    .about,
+    .faq,
+    .cta-section {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+
+    .footer-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 900px) {
+    .hero {
+        height: 60vh;
+        min-height: 420px;
+    }
+
+    .hero-overlay h2 {
+        font-size: 2.1rem;
+    }
+
+    .section-heading h2 {
+        font-size: 1.8rem;
+    }
+
+    .cta-content h2 {
+        font-size: 1.9rem;
+    }
+}
+
 /* ===== RESPONSIVO (mobile) ===== */
 @media (max-width: 768px) {
     .footer-grid {
@@ -1860,6 +1992,20 @@ body.modal-open {
         gap: 12px;
     }
 
+    .logo-nome,
+    .whatsapp-btn {
+        width: 100%;
+    }
+
+    .logo-nome {
+        justify-content: flex-start;
+    }
+
+    .whatsapp-btn {
+        display: flex;
+        justify-content: center;
+    }
+
     .logo-nome h1 {
         font-size: 1.2rem;
     }
@@ -1875,6 +2021,21 @@ body.modal-open {
 
     .hero-overlay h2 {
         font-size: 1.9rem;
+    }
+
+    .inventory,
+    .highlights,
+    .feedback,
+    .plans-price,
+    .sold-showcase,
+    .about,
+    .cta-section,
+    .faq {
+        padding: 52px 16px;
+    }
+
+    .footer-column {
+        margin: 0;
     }
 
     .plans-price,

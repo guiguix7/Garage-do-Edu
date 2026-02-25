@@ -1,18 +1,22 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Garage do Edu - Anúncio detalhado de veículo clássico com histórico, inspeções e condições especiais.">
+    <meta name="description"
+        content="Garage do Edu - Anúncio detalhado de veículo clássico com histórico, inspeções e condições especiais.">
     <meta name="keywords" content="anúncio carro clássico, venda de carros antigos, Garage do Edu, estoque premium">
     <meta name="author" content="Desenvolvedor: Guilherme Andraz, Dono do site: Eduardo Arcos">
     <meta property="og:title" content="Anúncio - Garage do Edu">
-    <meta property="og:description" content="Conheça todos os detalhes deste clássico disponível na Garage do Edu e fale com nosso time especializado.">
+    <meta property="og:description"
+        content="Conheça todos os detalhes deste clássico disponível na Garage do Edu e fale com nosso time especializado.">
     <meta property="og:type" content="website">
     <title id="page-title">Anúncio - Garage do Edu</title>
     <link rel="stylesheet" href="../CSS/style.css">
     <link rel="stylesheet" href="../CSS/ad.css">
 </head>
+
 <body data-auth-endpoint="http://localhost:3000/auth" data-inventory-endpoint="http://localhost:3000/cars">
     <header>
         <div class="header-top">
@@ -28,7 +32,8 @@
                 <span class="info">Atendimento em Salto/SP • Trocas avaliadas com cuidado</span>
                 <div class="phone">
                     <a href="https://wa.me/5511963152153" target="_blank" rel="noopener"><img
-                            src="../SRC/ASSETS/IMG/bolha-de-bate-papo.png" alt="Contato WhatsApp" class="logo-sociais"></a>
+                            src="../SRC/ASSETS/IMG/bolha-de-bate-papo.png" alt="Contato WhatsApp"
+                            class="logo-sociais"></a>
                     <span>11 96315-2153</span>
                 </div>
                 <div class="search-style">
@@ -39,27 +44,21 @@
                 </div>
             </div>
             <div class="links-header">
-                <a href="../../index.html#plans-grid">Anuncie Já</a>
+                <a href="../../index.html">Inicio</a>
                 <div class="dropdown-header">
                     <div class="myacount">
                         <button class="account-trigger" type="button" aria-haspopup="true" aria-expanded="false"
                             data-account-base-label="Minha Conta">
-                            <img src="../SRC/ASSETS/IMG/forma-removebg-preview.png" alt="Abrir submenu" class="icone-seta"><span data-account-label>Minha Conta</span>
+                            <img src="../SRC/ASSETS/IMG/forma-removebg-preview.png" alt="Icone de seta pra baixo"
+                                class="icone-seta"><span data-account-label>Minha Conta</span>
                         </button>
                         <ul class="submenu" role="menu" data-account-menu>
-                            <li class="submenu-item" role="none" data-account-item data-account-visible="guest">
-                                <a role="menuitem" href="login.html">Login</a>
-                            </li>
-                            <li class="submenu-item" role="none" data-account-item data-account-visible="guest">
-                                <a role="menuitem" href="cadastro.html">Cadastrar</a>
-                            </li>
-                            <li class="submenu-item" role="none" data-account-item data-account-visible="authenticated">
-                                <button type="button" role="menuitem" data-account-logout>Logout</button>
-                            </li>
-                            <li class="submenu-item" role="none" data-account-item data-account-visible="authenticated" data-account-role="partner">
+                            <li class="submenu-item" role="none" data-account-item data-account-visible="authenticated"
+                                data-account-role="partner">
                                 <a role="menuitem" href="ad_create.html">Meus Anúncios</a>
                             </li>
-                            <li class="submenu-item" role="none" data-account-item data-account-visible="authenticated" data-account-role="admin">
+                            <li class="submenu-item" role="none" data-account-item data-account-visible="authenticated"
+                                data-account-role="admin">
                                 <a role="menuitem" href="admin.html">Painel Administrativo</a>
                             </li>
                             <li class="submenu-item submenu-configs" role="none" data-account-item>
@@ -91,10 +90,12 @@
                     <li><a href="../../index.html#contato">Contato</a></li>
                 </ul>
             </nav>
-            <a class="whatsapp-btn" href="https://wa.me/5511963152153?text=Tenho%20interesse%20no%20carro%20da%20Garage%20do%20Edu" target="_blank" rel="noopener">
+            <a class="whatsapp-btn"
+                href="https://wa.me/5511963152153?text=Tenho%20interesse%20no%20carro%20da%20Garage%20do%20Edu"
+                target="_blank" rel="noopener">
                 <div class="wths">
-                    <img src="../SRC/ASSETS/IMG/whatsapp.png" alt="WhatsApp" class="logo-sociais">
-                    <span>Fale com Especialista</span>
+                    <img src="../SRC/ASSETS/IMG/bolha-de-bate-papo.png" alt="WhatsApp" class="logo-sociais">
+                    <span>Entre em Contato</span>
                 </div>
             </a>
         </div>
@@ -103,7 +104,8 @@
         <p class="ad-status" data-car-status hidden role="status" aria-live="polite"></p>
         <section class="ad-hero" aria-labelledby="car-title">
             <div class="ad-hero__media">
-                <img src="../SRC/ASSETS/IMG/carro1-carrossel-teste.jpg" alt="Chevrolet Opala SS 1978 em destaque" class="ad-hero__image" data-car-cover>
+                <img src="../SRC/ASSETS/IMG/carro1-carrossel-teste.jpg" alt="Chevrolet Opala SS 1978 em destaque"
+                    class="ad-hero__image" data-car-cover>
                 <span class="ad-hero__badge" data-car-badge>Colecionável certificado</span>
             </div>
             <div class="ad-hero__content">
@@ -113,7 +115,8 @@
                 <div class="ad-hero__price" data-car-price-block>
                     <span class="ad-hero__price-label" data-car-price-label>Preço especial</span>
                     <strong class="ad-hero__price-value" data-car-price>R$ 189.900</strong>
-                    <span class="ad-hero__installments" data-car-installments>Entrada flexível + saldo em até 48x com aprovação imediata</span>
+                    <span class="ad-hero__installments" data-car-installments>Entrada flexível + saldo em até 48x com
+                        aprovação imediata</span>
                 </div>
                 <ul class="ad-hero__facts" data-car-facts>
                     <li><span>Ano</span><strong data-car-year>1978</strong></li>
@@ -122,10 +125,13 @@
                     <li><span>Cor</span><strong data-car-color>Azul Midnight</strong></li>
                 </ul>
                 <div class="ad-hero__actions">
-                    <a class="cta whatsapp" href="https://wa.me/5511963152153?text=Tenho%20interesse%20no%20Opala%20SS%201978" target="_blank" rel="noopener" data-car-whatsapp>Conversar no WhatsApp</a>
+                    <a class="cta whatsapp"
+                        href="https://wa.me/5511963152153?text=Tenho%20interesse%20no%20Opala%20SS%201978"
+                        target="_blank" rel="noopener" data-car-whatsapp>Conversar no WhatsApp</a>
                     <button class="cta ghost" type="button" data-open-schedule>Agendar visita guiada</button>
                 </div>
-                <p class="ad-hero__disclaimer" data-car-description>Inspeção técnica homologada, documentação em dia e histórico de manutenção auditado pelo time Garage do Edu.</p>
+                <p class="ad-hero__disclaimer" data-car-description>Inspeção técnica homologada, documentação em dia e
+                    histórico de manutenção auditado pelo time Garage do Edu.</p>
             </div>
         </section>
         <section class="ad-summary" aria-label="Principais destaques do veículo">
@@ -151,12 +157,30 @@
                 <article class="details-block" data-car-specs>
                     <h3>Ficha técnica</h3>
                     <dl class="spec-list">
-                        <div><dt>Motor</dt><dd data-spec-engine>V8 5.0 carburado</dd></div>
-                        <div><dt>Potência</dt><dd data-spec-power>320 cv @ 5.800 rpm</dd></div>
-                        <div><dt>Torque</dt><dd data-spec-torque>49 kgfm</dd></div>
-                        <div><dt>Transmissão</dt><dd data-spec-transmission>Manual 4 marchas</dd></div>
-                        <div><dt>Tração</dt><dd data-spec-drive>Traseira</dd></div>
-                        <div><dt>Documentação</dt><dd data-spec-doc>IPVA 2026 pago • Placa preta</dd></div>
+                        <div>
+                            <dt>Motor</dt>
+                            <dd data-spec-engine>V8 5.0 carburado</dd>
+                        </div>
+                        <div>
+                            <dt>Potência</dt>
+                            <dd data-spec-power>320 cv @ 5.800 rpm</dd>
+                        </div>
+                        <div>
+                            <dt>Torque</dt>
+                            <dd data-spec-torque>49 kgfm</dd>
+                        </div>
+                        <div>
+                            <dt>Transmissão</dt>
+                            <dd data-spec-transmission>Manual 4 marchas</dd>
+                        </div>
+                        <div>
+                            <dt>Tração</dt>
+                            <dd data-spec-drive>Traseira</dd>
+                        </div>
+                        <div>
+                            <dt>Documentação</dt>
+                            <dd data-spec-doc>IPVA 2026 pago • Placa preta</dd>
+                        </div>
                     </dl>
                 </article>
                 <article class="details-block" data-car-history>
@@ -236,7 +260,9 @@
                 <article class="contact-card">
                     <h3>Atendimento Garage do Edu</h3>
                     <p>Horários: Segunda a sábado das 9h às 19h.</p>
-                    <a class="cta whatsapp" href="https://wa.me/5511963152153?text=Quero%20saber%20mais%20sobre%20o%20Opala%20SS" target="_blank" rel="noopener" data-car-contact-whatsapp>Chamar no WhatsApp</a>
+                    <a class="cta whatsapp"
+                        href="https://wa.me/5511963152153?text=Quero%20saber%20mais%20sobre%20o%20Opala%20SS"
+                        target="_blank" rel="noopener" data-car-contact-whatsapp>Chamar no WhatsApp</a>
                 </article>
                 <article class="contact-card">
                     <h3>Agende uma visita guiada</h3>
@@ -246,7 +272,8 @@
                 <article class="contact-card">
                     <h3>Documentação sob medida</h3>
                     <p>Envie seus dados para pré-análise e receba o dossiê completo do carro por e-mail.</p>
-                    <a class="cta" href="mailto:contato@garagedoedu.com?subject=Interesse%20no%20Opala%20SS" rel="noopener" data-car-contact-email>Solicitar dossiê</a>
+                    <a class="cta" href="mailto:contato@garagedoedu.com?subject=Interesse%20no%20Opala%20SS"
+                        rel="noopener" data-car-contact-email>Solicitar dossiê</a>
                 </article>
             </div>
         </section>
@@ -258,12 +285,16 @@
                 <div class="contact-item"><span>Salto/SP</span></div>
                 <div class="contact-item"><a href="tel:+5511963152153">(11) 96315-2153</a></div>
                 <div class="contact-item"><a href="mailto:contato@garagedoedu.com">contato@garagedoedu.com</a></div>
-                <div class="contact-item"><a href="https://wa.me/5511963152153?text=Ol%C3%A1%2C%20quero%20um%20site%20para%20minha%20marca" target="_blank" rel="noopener">Quero um Site!</a></div>
+                <div class="contact-item"><a
+                        href="https://wa.me/5511963152153?text=Ol%C3%A1%2C%20quero%20um%20site%20para%20minha%20marca"
+                        target="_blank" rel="noopener">Quero um Site!</a></div>
             </div>
             <div class="footer-column">
                 <h3>SOBRE A GARAGE DO EDU</h3>
-                <p>A Garage do Edu reúne carros clássicos, com história e que carregam lembranças do Para-Choque ao Paralamas.</p>
-                <p>Os carros que sempre estiveram presentes na vida das famílias ao redor do Brasil agora estão reunidos em um só lugar.</p>
+                <p>A Garage do Edu reúne carros clássicos, com história e que carregam lembranças do Para-Choque ao
+                    Paralamas.</p>
+                <p>Os carros que sempre estiveram presentes na vida das famílias ao redor do Brasil agora estão reunidos
+                    em um só lugar.</p>
             </div>
             <div class="footer-column">
                 <h3>NEGÓCIOS:</h3>
@@ -289,4 +320,5 @@
     <script src="../SCRIPT/server.js" defer></script>
     <script src="../SCRIPT/ad.js" defer></script>
 </body>
+
 </html>

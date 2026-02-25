@@ -393,6 +393,7 @@ section {
     align-items: center;
     gap: 16px;
     font-size: 0.95rem;
+    flex-wrap: wrap;
 }
 
 .opcs a {
@@ -571,6 +572,7 @@ section {
     text-align: center;
     margin-top: 24px;
 }
+
 @media (max-width: 1024px) {
     .header {
         flex-direction: column;
