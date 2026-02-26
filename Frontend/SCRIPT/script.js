@@ -1941,10 +1941,6 @@ function initializeAuthGuards(dom) {
 
 		event.preventDefault();
 		event.stopPropagation();
-		const message = element.dataset.authMessage || 'É necessário estar logado para acessar esta funcionalidade.';
-		if (message) {
-			window.alert(message);
-		}
 		redirectToFallback(element);
 	};
 
@@ -2050,24 +2046,6 @@ function initializeCookieConsent(dom) {
 			preferences: { analytics: true, marketing: true }
 		});
 		hideBanner(source, 'accepted');
-	};
-
-	const rejectConsent = (source) => {
-		storeConsent({
-			status: 'rejected',
-			decidedAt: new Date().toISOString(),
-			preferences: { analytics: false, marketing: false }
-		});
-		hideBanner(source, 'rejected');
-	};
-
-	const saveCustomConsent = (source) => {
-		storeConsent({
-			status: 'custom',
-			decidedAt: new Date().toISOString(),
-			preferences: { analytics: false, marketing: false }
-		});
-		hideBanner(source, 'custom');
 	};
 
 	const showBanner = () => {
@@ -2408,10 +2386,10 @@ function initializeInventoryModal(dom) {
 		const { title, price, description, features = '', image = '', whatsapp } = card.dataset;
 
 		modal.image.src = image || 'https://placehold.co/1280x720?text=Imagem+indisponivel';
-		modal.image.alt = title ? `Imagem do ${title}` : 'Imagem do ve�culo selecionado';
-		modal.title.textContent = title ?? 'Ve�culo dispon�vel';
+		modal.image.alt = title ? `Imagem do ${title}` : 'Imagem do veículo selecionado';
+		modal.title.textContent = title ?? 'Veículo disponível';
 		modal.price.textContent = price ?? '';
-		modal.description.textContent = description ?? 'Entre em contato para mais informa��es.';
+		modal.description.textContent = description ?? 'Entre em contato para mais informações.';
 
 		modal.features.innerHTML = '';
 		features

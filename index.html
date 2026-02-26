@@ -119,7 +119,7 @@
                 <ul>
                     <li><a href="#ads">Anúncios</a></li>
                     <li><a href="#destaques">Parceiros</a></li>
-                    <li><a href="#vendidos">Vendidos</a></li>
+                    <li><a href="#vendido">Vendidos</a></li>
                     <li><a href="#sobre">Sobre Nós</a></li>
                     <li><a href="#contato">Contato</a></li>
                 </ul>
@@ -174,7 +174,7 @@
         <section id="estoque" class="inventory">
             <div class="section-heading" data-reveal>
                 <h2>Anúncios</h2>
-                <p>Dê uma olhadas nas nossas jóias.</p>
+                <p>Da uma olhadas nas nossas jóias.</p>
             </div>
             <div class="inventory-filters" role="group" aria-label="Filtrar anúncios" id="ads">
                 <div class="filter-select filter-select--checkbox" data-reveal data-brand-select>
@@ -275,7 +275,7 @@
             <div class="highlight-grid">
                 <article class="highlight-card" data-reveal>
                     <h3>Placa Preta</h3>
-                    <p>Certificação de veículos clássicos com placa preta.</p>
+                    <p>Temos certificado placa preta.</p>
                 </article>
                 <article class="highlight-card" data-reveal>
                     <h3>Bom Atendimento</h3>
@@ -287,7 +287,7 @@
                 </article>
                 <article class="highlight-card" data-reveal>
                     <h3>Bem Avaliado</h3>
-                    <p>Nossos clientes destacam nosso atendimento, rapidez e um suporte dedicado.</p>
+                    <p>Nossos clientes destacam nosso atendimento.</p>
                 </article>
             </div>
         </section>
@@ -390,7 +390,7 @@
                 <p></p>
             </div>
             <!-- Arrumar estilização (a barra em cima dos grids está um pouco desalinhada)-->
-            <div class="sold-grid">
+            <div class="sold-grid" id="vendido">
                 <article class="sold-card" data-reveal>
                     <span class="sold-badge">Vendido</span>
                     <img src="https://placehold.co/600x400?text=Fusca+1968" alt="Volkswagen Fusca 1968" loading="lazy">
@@ -432,6 +432,22 @@
                     <p>Retiradas presenciais em Salto/SP, com agendamento prévio e suporte à documentação.</p>
                 </article>
             </div>
+            <div class="maps">
+                <iframe
+                    src="https://www.google.com/maps/embed?pb=!3m2!1spt-BR!2sbr!4v1772056803747!5m2!1spt-BR!2sbr!6m8!1m7!1sE_GivrB5A_XwiqDQe8xAsA!2m2!1d-23.20816653358939!2d-47.26612812945819!3f102.5155594803864!4f6.210713402064201!5f0.7820865974627469"
+                    width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy"
+                    referrerpolicy="no-referrer-when-downgrade"></iframe>
+                <iframe
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d916.7318219122658!2d-47.26803436875343!3d-23.20932036326105!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x94cf4e4147d94f29%3A0xc2c341990f16413d!2sR.%20Roque%20Lazzazera%2C%20Salto%20-%20SP%2C%2013323-341!5e0!3m2!1spt-BR!2sbr!4v1772056876546!5m2!1spt-BR!2sbr"
+                    width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy"
+                    referrerpolicy="no-referrer-when-downgrade"></iframe>
+            </div>
+            <div class="about-grid">
+                <article class="about-card" data-reveal>
+                    <h3>Localização</h3>
+                    <p>Nossa loja está localizada na Rua Roque Lazzazera, Salto/SP, próximo ao centro comercial.</p>
+                </article>
+            </div>
         </section>
         <!-- Seção do WhatsApp -->
         <section id="contato" class="cta-section">
@@ -465,12 +481,11 @@
                 <div class="car-modal__actions">
                     <a class="cta whatsapp" data-car-modal-whatsapp href="https://wa.me/5511963152153" target="_blank"
                         rel="noopener">Falar no WhatsApp</a>
-                    <a href="#" class="more-details-btn">Ver Mais Detalhes</a>
+                    <a class="more-details-btn" href="Frontend/HTML/anuncio.html" data-card-detail>Ver detalhes</a>
                 </div>
             </div>
         </div>
     </div>
-    <!-- Extras (Cookies) -->
     <div class="cookie-consent" data-cookie-consent aria-live="polite" role="region" hidden>
         <p>Usamos cookies para o funcionamento adequado do site,e para melhorar sua experiência, a desativação poderá
             fazer com que a pagina não funcione corretamente. Ao continuar navegando, você concorda com nossa <a
@@ -527,7 +542,6 @@
                 <div class="grid">
                     <span>© 2026 Garage do Edu. Todos os direitos reservados.</span>
                     <span>Desenvolvido por Guilherme Andraz.</span>
-                    <a href="Frontend/HTML/admin.html">Administrador</a> <!-- Retirar mais tarde -->
                 </div>
             </div>
         </div>
