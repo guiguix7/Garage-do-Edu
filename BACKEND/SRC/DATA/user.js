@@ -17,9 +17,6 @@ export default class UserDataAccess {
             .collection(collectionName)
             .find({}, { projection: { password: 0 } })
             .toArray();
-
-        console.log('Get Request', result.length, 'users found.');
-        console.log('statusCode = 200');
         return ({ info: `${result.length} users found.`, result });
     }
 
@@ -32,13 +29,7 @@ export default class UserDataAccess {
             .collection(collectionName)
             .deleteOne({ _id: new ObjectId(userId) });
 
-        console.log({
-            'Delete Request': {
-                success: result.deletedCount > 0,
-                id_deleted: userId,
-                deletedCount: result.deletedCount
-            }
-        });
+
         return result.deletedCount;
     }
 

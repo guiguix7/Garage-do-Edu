@@ -1,8 +1,7 @@
 // Cuidado para não expor informações sensíveis neste arquivo.
 // Este arquivo deve ser protegido e acessível apenas por administradores autorizados.
-// Esse é um script front-end, muito cuidado ao adcionar códigos que possam dar vunerabilidades e comprometer a segurança.
-// Esse script deve armazenar apenas a logica e funcionalidades simples que não precisam de dados como senhas ou informações sensíveis.
-// Para funcionalidades mais complexas e que envolvam dados sensíveis, utilize scripts back-end com as devidas medidas de segurança. (Futuro)
+// Esse é um script front-end, muito cuidado ao adicionar códigos que possam dar vulnerabilidades.
+// Para funcionalidades sensíveis, use scripts back-end com as devidas medidas de segurança.
 
 const SELECTORS = {
 	adminName: '#admin-name',
@@ -15,58 +14,101 @@ const SELECTORS = {
 	profileTrigger: '.admin-profile__trigger',
 	profileMenu: '.admin-profile__menu',
 	filterGroups: '.admin-panel__filters',
-	themeToggle: '[data-admin-theme-toggle]'
+	themeToggle: '[data-admin-theme-toggle]',
+	refreshButton: '[data-admin-refresh]',
+	statusApi: '[data-admin-status="api"]',
+	statusAuth: '[data-admin-status="auth"]',
+	statusMaintenance: '[data-admin-status="maintenance"]',
+	lastUpdate: '[data-admin-last-update]',
+	carsTable: '[data-admin-cars]',
+	usersTable: '[data-admin-users]',
+	partnersTable: '[data-admin-partners]',
+	logsList: '[data-admin-logs]',
+	feedbackList: '[data-admin-feedback]',
+	maintenanceToggle: '[data-admin-maintenance]',
+	maintenanceLabel: '[data-admin-maintenance-label]',
+	maintenancePages: '[data-maintenance-page]'
 };
 
 const STORAGE_KEYS = ['garageAdminName', 'garageUserName', 'garageUser', 'adminName'];
 const THEME_STORAGE_KEY = 'garage-do-edu-admin-theme';
 const DESKTOP_MEDIA = window.matchMedia('(min-width: 1200px)');
+const DEFAULT_ENDPOINTS = {
+	auth: 'http://localhost:3000/auth',
+	user: 'http://localhost:3000/user',
+	cars: 'http://localhost:3000/cars',
+	feedback: 'http://localhost:3000/feedback',
+	health: 'http://localhost:3000/health'
+};
+
 const adminState = {
-	closeSidebar: null
+	closeSidebar: null,
+	endpoints: null,
+	adminUser: null
 };
 
 document.addEventListener('DOMContentLoaded', () => {
 	verifyAdminAccess()
-		.then((allowed) => {
-			if (!allowed) {
+		.then((user) => {
+			if (!user) {
 				return;
 			}
-			hydrateSession();
+			adminState.adminUser = user;
+			hydrateSession(user);
 			initSidebarToggle();
 			initProfileMenu();
 			initNavHighlighting();
 			initFilterGroups();
 			initThemeToggle();
 			bindLogout();
+			initRefreshButton();
+			initMaintenanceToggle();
+			initMaintenancePages();
+			initAdminActions();
+			loadDashboardData();
 		})
 		.catch((error) => {
 			console.warn('Falha ao validar acesso admin.', error);
+			setStatusBadge(SELECTORS.statusAuth, 'warning', 'Erro');
 			redirectToLogin('admin_access_denied');
 		});
 });
 
+function getEndpoints() {
+	if (adminState.endpoints) {
+		return adminState.endpoints;
+	}
+	const body = document.body;
+	const resolve = (value, fallback) => (value ? value.replace(/\/$/, '') : fallback);
+	adminState.endpoints = {
+		auth: resolve(body?.dataset.authEndpoint, DEFAULT_ENDPOINTS.auth),
+		user: resolve(body?.dataset.userEndpoint, DEFAULT_ENDPOINTS.user),
+		cars: resolve(body?.dataset.carsEndpoint, DEFAULT_ENDPOINTS.cars),
+		feedback: resolve(body?.dataset.feedbackEndpoint, DEFAULT_ENDPOINTS.feedback),
+		health: resolve(body?.dataset.healthEndpoint, DEFAULT_ENDPOINTS.health)
+	};
+	return adminState.endpoints;
+}
+
+function getLoginPage() {
+	const candidate = document.body?.dataset.loginPage?.trim();
+	return candidate || 'login.html';
+}
+
 async function verifyAdminAccess() {
 	const tokenKey = 'garage-auth-token';
 	const sessionKey = 'garage-auth-session';
-	const body = document.body;
-	const authEndpoint = (body?.dataset.authEndpoint || 'http://localhost:3000/auth').replace(/\/$/, '');
-
-	const token = (() => {
-		try {
-			return window.localStorage.getItem(tokenKey);
-		} catch (error) {
-			return null;
-		}
-	})();
+	const endpoints = getEndpoints();
+	const token = readToken(tokenKey);
 
 	if (!token) {
 		clearAuthState(tokenKey, sessionKey);
 		redirectToLogin('admin_access_denied');
-		return false;
+		return null;
 	}
 
 	try {
-		const response = await fetch(`${authEndpoint}/me`, {
+		const response = await fetch(`${endpoints.auth}/me`, {
 			method: 'GET',
 			headers: {
 				Accept: 'application/json',
@@ -78,21 +120,30 @@ async function verifyAdminAccess() {
 		if (!response.ok) {
 			clearAuthState(tokenKey, sessionKey);
 			redirectToLogin('admin_access_denied');
-			return false;
+			return null;
 		}
 
 		const payload = await response.json();
 		if (!payload?.user || payload.user.role !== 'admin') {
 			clearAuthState(tokenKey, sessionKey);
 			redirectToLogin('admin_access_denied');
-			return false;
+			return null;
 		}
 
-		return true;
+		setStatusBadge(SELECTORS.statusAuth, 'success', 'Autenticado');
+		return payload.user;
 	} catch (error) {
 		clearAuthState(tokenKey, sessionKey);
 		redirectToLogin('admin_access_denied');
-		return false;
+		return null;
+	}
+}
+
+function readToken(tokenKey) {
+	try {
+		return window.localStorage.getItem(tokenKey);
+	} catch (error) {
+		return null;
 	}
 }
 
@@ -107,7 +158,7 @@ function clearAuthState(tokenKey, sessionKey) {
 
 function redirectToLogin(reason) {
 	const query = reason ? `?error=${encodeURIComponent(reason)}` : '';
-	window.location.replace(`login.html${query}`);
+	window.location.replace(`${getLoginPage()}${query}`);
 }
 
 function bindLogout() {
@@ -121,18 +172,12 @@ function bindLogout() {
 	});
 }
 
-function hydrateSession() {
+function hydrateSession(user) {
 	const nameField = document.querySelector(SELECTORS.adminName);
 	const greetingField = document.querySelector(SELECTORS.greeting);
-	if (!nameField) {
-		return;
+	if (nameField) {
+		nameField.textContent = user?.username || readStoredName() || 'Administrador';
 	}
-
-	const storedName = readStoredName();
-	if (storedName) {
-		nameField.textContent = storedName;
-	}
-
 	if (greetingField) {
 		greetingField.textContent = getGreeting();
 	}
@@ -156,6 +201,99 @@ function getGreeting() {
 		return 'Boa tarde,';
 	}
 	return 'Boa noite,';
+}
+
+function initRefreshButton() {
+	const buttons = document.querySelectorAll(SELECTORS.refreshButton);
+	if (!buttons.length) {
+		return;
+	}
+	buttons.forEach((button) => {
+		button.addEventListener('click', () => loadDashboardData());
+	});
+}
+
+function initMaintenanceToggle() {
+	const toggle = document.querySelector(SELECTORS.maintenanceToggle);
+	if (!toggle) {
+		return;
+	}
+	toggle.addEventListener('change', () => {
+		setMaintenanceState(toggle.checked, getSelectedMaintenancePages());
+	});
+}
+
+function initMaintenancePages() {
+	const checkboxes = document.querySelectorAll(SELECTORS.maintenancePages);
+	if (!checkboxes.length) {
+		return;
+	}
+	checkboxes.forEach((checkbox) => {
+		checkbox.addEventListener('change', () => {
+			const toggle = document.querySelector(SELECTORS.maintenanceToggle);
+			const enabled = toggle ? toggle.checked : false;
+			setMaintenanceState(enabled, getSelectedMaintenancePages());
+		});
+	});
+}
+
+function initAdminActions() {
+	document.addEventListener('click', (event) => {
+		const action = event.target.closest('[data-admin-action]');
+		if (!action) {
+			return;
+		}
+		const actionName = action.dataset.adminAction;
+		const id = action.dataset.adminId;
+		if (!actionName || !id) {
+			return;
+		}
+		handleAdminAction(actionName, id, action.dataset.adminValue || null);
+	});
+}
+
+async function handleAdminAction(actionName, id, value) {
+	try {
+		const endpoints = getEndpoints();
+		if (actionName === 'approve-car') {
+			await fetchWithAuth(`${endpoints.cars}/pending/${encodeURIComponent(id)}/approve`, {
+				method: 'PUT'
+			});
+			loadDashboardData();
+			return;
+		}
+		if (actionName === 'delete-car') {
+			await fetchWithAuth(`${endpoints.cars}/${encodeURIComponent(id)}`, {
+				method: 'DELETE'
+			});
+			loadDashboardData();
+			return;
+		}
+		if (actionName === 'promote-user') {
+			await fetchWithAuth(`${endpoints.user}/${encodeURIComponent(id)}/role`, {
+				method: 'PATCH',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({ role: 'partner' })
+			});
+			loadDashboardData();
+			return;
+		}
+		if (actionName === 'toggle-user') {
+			const nextValue = value === 'true' ? false : true;
+			await fetchWithAuth(`${endpoints.user}/${encodeURIComponent(id)}`, {
+				method: 'PUT',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({ isActive: nextValue })
+			});
+			loadDashboardData();
+		}
+	} catch (error) {
+		console.warn('Falha ao executar acao admin.', error);
+	}
 }
 
 function initSidebarToggle() {
@@ -425,8 +563,8 @@ function initThemeToggle() {
 	let currentTheme = readStoredTheme();
 	applyTheme(currentTheme, toggle);
 
-	toggle.addEventListener('click', () => {
-		currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+	toggle.addEventListener('change', () => {
+		currentTheme = toggle.checked ? 'light' : 'dark';
 		applyTheme(currentTheme, toggle);
 		persistTheme(currentTheme);
 	});
@@ -451,7 +589,515 @@ function persistTheme(theme) {
 
 function applyTheme(theme, toggle) {
 	document.body.classList.toggle('admin-theme-light', theme === 'light');
-	const label = theme === 'light' ? 'Tema escuro' : 'Tema claro';
-	toggle.textContent = label;
-	toggle.setAttribute('aria-pressed', theme === 'light' ? 'true' : 'false');
+	toggle.checked = theme === 'light';
+}
+
+async function loadDashboardData() {
+	const endpoints = getEndpoints();
+	setLastUpdate(new Date());
+
+	const tasks = await Promise.allSettled([
+		fetchHealth(endpoints),
+		loadStats(endpoints),
+		loadFeedback(endpoints),
+		loadCars(endpoints),
+		loadUsers(endpoints),
+		loadLogs(endpoints),
+		loadMaintenance(endpoints)
+	]);
+
+	const hasHealthError = tasks[0].status === 'rejected';
+	if (hasHealthError) {
+		setStatusBadge(SELECTORS.statusApi, 'warning', 'Indisponivel');
+	}
+}
+
+async function fetchHealth(endpoints) {
+	const response = await fetch(endpoints.health, { method: 'GET' });
+	if (!response.ok) {
+		throw new Error('Health check failed');
+	}
+	setStatusBadge(SELECTORS.statusApi, 'success', 'Online');
+}
+
+async function loadStats(endpoints) {
+	try {
+		const response = await fetchWithAuth(`${endpoints.user}/stats`, { method: 'GET' });
+		const payload = await response.json();
+		const stats = payload?.body || {};
+		setTextById('available_ads', formatNumber(stats.availableCars));
+		setTextById('total_ads', formatNumber(stats.totalCars));
+		setTextById('total_customers', formatNumber(stats.totalUsers));
+		setTextById('sold_cars', formatNumber(stats.soldCars));
+		setTextById('total_partners', formatNumber(stats.partners));
+	} catch (error) {
+		console.warn('Falha ao carregar estatisticas.', error);
+	}
+}
+
+async function loadFeedback(endpoints) {
+	try {
+		const response = await fetch(endpoints.feedback, { method: 'GET' });
+		const payload = await response.json();
+		const feedback = payload?.body || {};
+		const average = Number(feedback.averageRating || 0).toFixed(1);
+		setTextById('average_rating', average);
+		setTextById('total_reviews', `${formatNumber(feedback.total)} avaliações`);
+		setTextById('rating_stars', buildStars(average));
+		renderFeedbackList(feedback.result || []);
+	} catch (error) {
+		console.warn('Falha ao carregar feedback.', error);
+	}
+}
+
+async function loadCars(endpoints) {
+	try {
+		const [activeResult, pendingResult] = await Promise.allSettled([
+			fetch(`${endpoints.cars}`),
+			fetchWithAuth(`${endpoints.cars}/pending`, { method: 'GET' })
+		]);
+
+		const activeCars = await resolveCarsResponse(activeResult);
+		const pendingCars = await resolveCarsResponse(pendingResult, true);
+		const merged = mergeCars(activeCars, pendingCars).slice(0, 6);
+		renderCarsTable(merged);
+	} catch (error) {
+		console.warn('Falha ao carregar anuncios.', error);
+		renderCarsTable([]);
+	}
+}
+
+async function resolveCarsResponse(result, requiresAuth = false) {
+	if (!result || result.status === 'rejected') {
+		return [];
+	}
+	const response = result.value;
+	if (!response.ok) {
+		if (requiresAuth) {
+			return [];
+		}
+		throw new Error('Cars request failed');
+	}
+	const payload = await response.json();
+	const body = payload?.body || {};
+	return Array.isArray(body.cars) ? body.cars : [];
+}
+
+function mergeCars(activeCars, pendingCars) {
+	const annotatedActive = activeCars.map((car) => ({ ...car, status: car.status || 'active' }));
+	const annotatedPending = pendingCars.map((car) => ({ ...car, status: car.status || 'pending' }));
+	return [...annotatedPending, ...annotatedActive].sort((a, b) => {
+		const aTime = new Date(a.updatedAt || a.createdAt || 0).getTime();
+		const bTime = new Date(b.updatedAt || b.createdAt || 0).getTime();
+		return bTime - aTime;
+	});
+}
+
+async function loadUsers(endpoints) {
+	try {
+		const response = await fetchWithAuth(`${endpoints.user}`, { method: 'GET' });
+		const payload = await response.json();
+		const users = Array.isArray(payload?.body?.result) ? payload.body.result : [];
+		renderUsersTable(users.filter((user) => user.role === 'client').slice(0, 6));
+		renderPartnersTable(users.filter((user) => user.role === 'partner').slice(0, 6));
+	} catch (error) {
+		console.warn('Falha ao carregar usuarios.', error);
+		renderUsersTable([]);
+		renderPartnersTable([]);
+	}
+}
+
+async function loadLogs(endpoints) {
+	try {
+		const response = await fetchWithAuth(`${endpoints.user}/logs?limit=6`, { method: 'GET' });
+		const payload = await response.json();
+		const logs = Array.isArray(payload?.body?.result) ? payload.body.result : [];
+		renderLogs(logs);
+	} catch (error) {
+		console.warn('Falha ao carregar logs.', error);
+		renderLogs([]);
+	}
+}
+
+async function loadMaintenance(endpoints) {
+	try {
+		const response = await fetchWithAuth(`${endpoints.user}/maintenance`, { method: 'GET' });
+		const payload = await response.json();
+		const enabled = Boolean(payload?.body?.enabled);
+		const pages = Array.isArray(payload?.body?.pages) ? payload.body.pages : [];
+		applyMaintenanceState(enabled, pages, payload?.body?.updatedAt || null);
+	} catch (error) {
+		console.warn('Falha ao carregar modo manutencao.', error);
+		setStatusBadge(SELECTORS.statusMaintenance, 'warning', 'Indefinido');
+	}
+}
+
+async function setMaintenanceState(enabled, pages) {
+	try {
+		const endpoints = getEndpoints();
+		const response = await fetchWithAuth(`${endpoints.user}/maintenance`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({ enabled: Boolean(enabled), pages: Array.isArray(pages) ? pages : [] })
+		});
+		if (!response.ok) {
+			throw new Error('Maintenance toggle failed');
+		}
+		const payload = await response.json();
+		const nextPages = Array.isArray(payload?.body?.pages) ? payload.body.pages : [];
+		applyMaintenanceState(Boolean(payload?.body?.enabled), nextPages, payload?.body?.updatedAt || null);
+	} catch (error) {
+		console.warn('Falha ao atualizar manutencao.', error);
+	}
+}
+
+function applyMaintenanceState(enabled, pages, updatedAt) {
+	const toggle = document.querySelector(SELECTORS.maintenanceToggle);
+	const label = document.querySelector(SELECTORS.maintenanceLabel);
+	if (toggle) {
+		toggle.checked = enabled;
+	}
+	setSelectedMaintenancePages(pages);
+	if (label) {
+		label.textContent = enabled ? 'Ativo' : 'Desativado';
+		label.classList.toggle('admin-badge--success', enabled);
+		label.classList.toggle('admin-badge--neutral', !enabled);
+	}
+	setStatusBadge(SELECTORS.statusMaintenance, enabled ? 'success' : 'neutral', enabled ? 'Ativo' : 'Desativado');
+	if (updatedAt) {
+		setLastUpdate(new Date(updatedAt));
+	}
+}
+
+function getSelectedMaintenancePages() {
+	return Array.from(document.querySelectorAll(SELECTORS.maintenancePages))
+		.filter((checkbox) => checkbox.checked)
+		.map((checkbox) => checkbox.dataset.maintenancePage)
+		.filter(Boolean);
+}
+
+function setSelectedMaintenancePages(pages) {
+	const selected = new Set(Array.isArray(pages) ? pages : []);
+	const checkboxes = document.querySelectorAll(SELECTORS.maintenancePages);
+	checkboxes.forEach((checkbox) => {
+		checkbox.checked = selected.has(checkbox.dataset.maintenancePage);
+	});
+}
+
+function renderCarsTable(cars) {
+	const body = document.querySelector(SELECTORS.carsTable);
+	if (!body) {
+		return;
+	}
+	body.innerHTML = '';
+	if (!cars.length) {
+		body.appendChild(createEmptyRow(5, 'Nenhum anúncio encontrado.'));
+		return;
+	}
+	cars.forEach((car) => {
+		const row = document.createElement('tr');
+		row.appendChild(createCell('Veiculo', car.name || 'Sem titulo'));
+		row.appendChild(createCell('Categoria', car.brand || 'Nao informado'));
+		row.appendChild(createStatusCell('Status', car.status));
+		row.appendChild(createCell('Horario', formatDate(car.updatedAt || car.createdAt)));
+		row.appendChild(createActionsCell(buildCarActions(car)));
+		body.appendChild(row);
+	});
+}
+
+function renderUsersTable(users) {
+	const body = document.querySelector(SELECTORS.usersTable);
+	if (!body) {
+		return;
+	}
+	body.innerHTML = '';
+	if (!users.length) {
+		body.appendChild(createEmptyRow(4, 'Nenhum cliente encontrado.'));
+		return;
+	}
+	users.forEach((user) => {
+		const row = document.createElement('tr');
+		row.appendChild(createCell('Cliente', user.username || 'Sem nome'));
+		row.appendChild(createCell('E-mail', user.email || 'Nao informado'));
+		row.appendChild(createStatusCell('Status', user.isActive === false ? 'inactive' : 'active'));
+		row.appendChild(createActionsCell(buildUserActions(user)));
+		body.appendChild(row);
+	});
+}
+
+function renderPartnersTable(users) {
+	const body = document.querySelector(SELECTORS.partnersTable);
+	if (!body) {
+		return;
+	}
+	body.innerHTML = '';
+	if (!users.length) {
+		body.appendChild(createEmptyRow(4, 'Nenhum parceiro encontrado.'));
+		return;
+	}
+	users.forEach((user) => {
+		const row = document.createElement('tr');
+		row.appendChild(createCell('Parceiro', user.username || 'Sem nome'));
+		row.appendChild(createCell('E-mail', user.email || 'Nao informado'));
+		row.appendChild(createStatusCell('Status', user.isActive === false ? 'inactive' : 'active'));
+		row.appendChild(createActionsCell(buildUserActions(user)));
+		body.appendChild(row);
+	});
+}
+
+function renderLogs(logs) {
+	const list = document.querySelector(SELECTORS.logsList);
+	if (!list) {
+		return;
+	}
+	list.innerHTML = '';
+	if (!logs.length) {
+		const empty = document.createElement('li');
+		empty.className = 'admin-empty';
+		empty.textContent = 'Nenhuma atividade registrada.';
+		list.appendChild(empty);
+		return;
+	}
+	logs.slice(0, 6).forEach((log) => {
+		const item = document.createElement('li');
+		const time = document.createElement('span');
+		time.className = 'admin-timeline__time';
+		time.textContent = formatTime(log.createdAt || log.timestamp);
+		const content = document.createElement('div');
+		content.className = 'admin-timeline__content';
+		const title = document.createElement('strong');
+		title.textContent = log.action || 'Atividade';
+		const description = document.createElement('p');
+		description.textContent = formatLogMeta(log);
+		content.appendChild(title);
+		content.appendChild(description);
+		item.appendChild(time);
+		item.appendChild(content);
+		list.appendChild(item);
+	});
+}
+
+function renderFeedbackList(items) {
+	const list = document.querySelector(SELECTORS.feedbackList);
+	if (!list) {
+		return;
+	}
+	list.innerHTML = '';
+	if (!items.length) {
+		const empty = document.createElement('li');
+		empty.className = 'admin-empty';
+		empty.textContent = 'Nenhum feedback recebido.';
+		list.appendChild(empty);
+		return;
+	}
+	items.slice(0, 4).forEach((item) => {
+		const listItem = document.createElement('li');
+		const title = document.createElement('strong');
+		title.textContent = `Nota ${item.rating || 0}`;
+		const message = document.createElement('span');
+		message.textContent = item.message || 'Sem mensagem';
+		listItem.appendChild(title);
+		listItem.appendChild(message);
+		list.appendChild(listItem);
+	});
+}
+
+function buildCarActions(car) {
+	const actions = [];
+	if (car.status === 'pending') {
+		actions.push(createActionButton('Aprovar', 'approve-car', car.id));
+	}
+	actions.push(createActionButton('Remover', 'delete-car', car.id));
+	return actions;
+}
+
+function buildUserActions(user) {
+	const actions = [];
+	if (user.role === 'client') {
+		actions.push(createActionButton('Promover', 'promote-user', user._id || user.id));
+	}
+	if (user.role !== 'admin') {
+		const active = user.isActive !== false;
+		actions.push(createActionButton(active ? 'Desativar' : 'Ativar', 'toggle-user', user._id || user.id, String(active)));
+	}
+	return actions;
+}
+
+function createActionButton(label, action, id, value) {
+	const button = document.createElement('button');
+	button.type = 'button';
+	button.className = 'link-button';
+	button.textContent = label;
+	button.dataset.adminAction = action;
+	button.dataset.adminId = id || '';
+	if (value !== undefined && value !== null) {
+		button.dataset.adminValue = value;
+	}
+	return button;
+}
+
+function createCell(label, value) {
+	const cell = document.createElement('td');
+	cell.dataset.label = label;
+	cell.textContent = value || '--';
+	return cell;
+}
+
+function createStatusCell(label, status) {
+	const cell = document.createElement('td');
+	cell.dataset.label = label;
+	const pill = document.createElement('span');
+	pill.className = `status-pill ${resolveStatusClass(status)}`;
+	pill.textContent = formatStatusLabel(status);
+	cell.appendChild(pill);
+	return cell;
+}
+
+function createActionsCell(actions) {
+	const cell = document.createElement('td');
+	cell.dataset.label = 'Acoes';
+	const wrapper = document.createElement('div');
+	wrapper.className = 'admin-table__actions';
+	actions.forEach((action) => wrapper.appendChild(action));
+	cell.appendChild(wrapper);
+	return cell;
+}
+
+function createEmptyRow(columns, text) {
+	const row = document.createElement('tr');
+	row.className = 'admin-empty';
+	const cell = document.createElement('td');
+	cell.colSpan = columns;
+	cell.textContent = text;
+	row.appendChild(cell);
+	return row;
+}
+
+function resolveStatusClass(status) {
+	if (status === 'active' || status === 'approved') {
+		return 'status-pill--success';
+	}
+	if (status === 'pending') {
+		return 'status-pill--warning';
+	}
+	if (status === 'inactive') {
+		return 'status-pill--neutral';
+	}
+	return 'status-pill--neutral';
+}
+
+function formatStatusLabel(status) {
+	if (status === 'active') {
+		return 'Publicado';
+	}
+	if (status === 'pending') {
+		return 'Revisao';
+	}
+	if (status === 'inactive') {
+		return 'Inativo';
+	}
+	return 'Indefinido';
+}
+
+function setTextById(id, value) {
+	const element = document.getElementById(id);
+	if (element) {
+		element.textContent = value || '0';
+	}
+}
+
+function formatNumber(value) {
+	const safe = Number(value || 0);
+	return new Intl.NumberFormat('pt-BR').format(safe);
+}
+
+function formatDate(dateValue) {
+	if (!dateValue) {
+		return '--';
+	}
+	const date = new Date(dateValue);
+	if (Number.isNaN(date.getTime())) {
+		return '--';
+	}
+	return new Intl.DateTimeFormat('pt-BR', {
+		dateStyle: 'short',
+		timeStyle: 'short'
+	}).format(date);
+}
+
+function formatTime(dateValue) {
+	if (!dateValue) {
+		return '--';
+	}
+	const date = new Date(dateValue);
+	if (Number.isNaN(date.getTime())) {
+		return '--';
+	}
+	return new Intl.DateTimeFormat('pt-BR', {
+		hour: '2-digit',
+		minute: '2-digit'
+	}).format(date);
+}
+
+function formatLogMeta(log) {
+	const action = log.action || 'atividade';
+	const actor = log.actorRole ? `(${log.actorRole})` : '';
+	const target = log.targetId ? `id ${log.targetId}` : 'sem alvo';
+	return `${action} ${actor} - ${target}`.trim();
+}
+
+function buildStars(value) {
+	const numeric = Math.max(0, Math.min(5, Math.round(Number(value) || 0)));
+	return `${'★'.repeat(numeric)}${'☆'.repeat(5 - numeric)}`;
+}
+
+function setStatusBadge(selector, type, label) {
+	const badge = document.querySelector(selector);
+	if (!badge) {
+		return;
+	}
+	badge.classList.remove('admin-badge--success', 'admin-badge--warning', 'admin-badge--neutral');
+	if (type === 'success') {
+		badge.classList.add('admin-badge--success');
+	} else if (type === 'warning') {
+		badge.classList.add('admin-badge--warning');
+	} else {
+		badge.classList.add('admin-badge--neutral');
+	}
+	badge.textContent = label;
+}
+
+function setLastUpdate(date) {
+	const fields = document.querySelectorAll(SELECTORS.lastUpdate);
+	if (!fields.length) {
+		return;
+	}
+	const text = date instanceof Date ? formatDate(date) : '--';
+	fields.forEach((field) => {
+		field.textContent = text;
+	});
+}
+
+async function fetchWithAuth(url, options = {}) {
+	const token = readToken('garage-auth-token');
+	const headers = new Headers(options.headers || {});
+	if (token) {
+		headers.set('Authorization', `Bearer ${token}`);
+	}
+
+	const response = await fetch(url, {
+		...options,
+		credentials: 'include',
+		headers
+	});
+
+	if (response.status === 401 || response.status === 403) {
+		clearAuthState('garage-auth-token', 'garage-auth-session');
+		redirectToLogin('unauthorized');
+		throw new Error('Unauthorized request.');
+	}
+
+	return response;
 }

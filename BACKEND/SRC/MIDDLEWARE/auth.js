@@ -86,6 +86,58 @@ export const authenticateToken = async (req, res, next) => {
     }
 };
 
+export const optionalAuthenticateToken = async (req, res, next) => {
+    const token = getTokenFromRequest(req);
+
+    if (!token) {
+        req.user = null;
+        return next();
+    }
+
+    if (!process.env.JWT_SECRET) {
+        return res.status(500).json({
+            success: false,
+            statusCode: 500,
+            message: 'Authentication configuration error.'
+        });
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const userId = decoded?.sub || decoded?.userId || decoded?.id;
+
+        if (!userId) {
+            return res.status(401).json({
+                success: false,
+                statusCode: 401,
+                message: 'Invalid token payload.'
+            });
+        }
+
+        const user = await Mongo.db.collection('users').findOne({ _id: new ObjectId(userId) });
+
+        if (!user) {
+            return res.status(401).json({
+                statusCode: 401,
+                success: false,
+                message: 'User not found.'
+            });
+        }
+
+        req.user = sanitizeUser(user);
+        return next();
+    } catch (err) {
+        const isExpired = err?.name === 'TokenExpiredError';
+        const message = isExpired ? 'Token expired.' : 'Invalid token.';
+
+        return res.status(401).json({
+            statusCode: 401,
+            success: false,
+            message
+        });
+    }
+};
+
 export const checkRole = (...allowedRoles) => {
     const roles = allowedRoles.flat().filter(Boolean).map((role) => String(role).toLowerCase());
 

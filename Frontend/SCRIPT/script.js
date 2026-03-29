@@ -2,6 +2,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 	const dom = collectDomReferences();
 	const state = createInitialState(dom);
 
+	const maintenanceAllowed = await checkMaintenanceGuard(dom);
+	if (!maintenanceAllowed) {
+		return;
+	}
+
 	await initializeInventoryData(dom, state);
 
 	prepareLazyInventoryCards(dom);
@@ -10,6 +15,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 	initializeNavigation(dom);
 	initializeHeader(dom, state);
 	initializeAccountMenu(dom);
+	initializeAccountPanel(dom);
 	initializeAuthGuards(dom);
 	initializeTheme(dom);
 	initializeHeroCarousel(dom, state);
@@ -25,9 +31,11 @@ const WHATSAPP_BASE_URL = `https://wa.me/${WHATSAPP_NUMBER}`;
 const DEFAULT_WHATSAPP_MESSAGE = 'Ol%C3%A1%2C%20estou%20no%20site%20da%20Garage%20do%20Edu%20e%20quero%20falar%20com%20voc%C3%AAs.';
 const AUTH_SESSION_STORAGE_KEY = 'garage-auth-session';
 const AUTH_TOKEN_STORAGE_KEY = 'garage-auth-token';
+const AUTH_CSRF_COOKIE_NAME = 'garage_csrf';
 const COOKIE_CONSENT_STORAGE_KEY = 'garage-cookie-consent';
 const COOKIE_CONSENT_VERSION = '1';
 const AUTH_DEFAULT_ENDPOINT = 'http://localhost:3000/auth';
+const MAINTENANCE_DEFAULT_ENDPOINT = 'http://localhost:3000/maintenance';
 const INVENTORY_DEFAULT_ENDPOINT = 'http://localhost:3000/cars';
 const INVENTORY_VISIBLE_BATCH = 4;
 const INVENTORY_FALLBACK_IMAGE = 'https://placehold.co/960x640?text=Ve%C3%ADculo';
@@ -52,9 +60,148 @@ function getAuthConfig(dom) {
 	};
 }
 
+function getMaintenanceEndpoint(dom) {
+	const authConfig = getAuthConfig(dom);
+	const base = authConfig.base.replace(/\/auth$/, '');
+	return dom.body?.dataset.maintenanceEndpoint?.trim() || `${base}/maintenance` || MAINTENANCE_DEFAULT_ENDPOINT;
+}
+
+async function checkMaintenanceGuard(dom) {
+	const endpoint = getMaintenanceEndpoint(dom);
+	const pageKey = getMaintenancePageKey(window.location.pathname);
+	if (!pageKey) {
+		return true;
+	}
+
+	try {
+		const response = await fetch(endpoint, { method: 'GET' });
+		if (!response.ok) {
+			return true;
+		}
+		const payload = await response.json();
+		const enabled = Boolean(payload?.body?.enabled);
+		const pages = Array.isArray(payload?.body?.pages) ? payload.body.pages : [];
+		if (!enabled || !pages.includes(pageKey)) {
+			return true;
+		}
+
+		showMaintenanceMessage(pageKey);
+		return false;
+	} catch (error) {
+		console.warn('Maintenance guard failed:', error);
+		return true;
+	}
+}
+
+function getMaintenancePageKey(pathname) {
+	const path = pathname.toLowerCase();
+	if (path.endsWith('/') || path.endsWith('/index.html')) {
+		return 'home';
+	}
+	if (path.includes('anuncio') || path.includes('ad_create')) {
+		return 'ads';
+	}
+	if (path.includes('feedback')) {
+		return 'feedback';
+	}
+	if (path.includes('cadastro')) {
+		return 'cadastro';
+	}
+	if (path.includes('login')) {
+		return 'login';
+	}
+	if (path.includes('politica')) {
+		return 'politica-privacidade';
+	}
+	return null;
+}
+
+function showMaintenanceMessage(pageKey) {
+	const message = 'Pagina temporariamente indisponivel para manutencao.';
+	const detailMap = {
+		home: 'A pagina inicial esta em manutenção.',
+		ads: 'A area de anuncios esta em manutenção.',
+		feedback: 'O envio de feedback esta em manutenção.',
+		cadastro: 'O cadastro de contas esta em manutenção.',
+		login: 'O login esta em manutenção.',
+		'politica-privacidade': 'A politica de privacidade esta em manutenção.'
+	};
+
+	const wrapper = document.createElement('div');
+	wrapper.className = 'maintenance-gate';
+	wrapper.innerHTML = `
+		<div class="maintenance-gate__card">
+			<span class="maintenance-gate__label">Manutenção</span>
+			<h1>${message}</h1>
+			<p>${detailMap[pageKey] || 'Tente novamente em alguns minutos.'}</p>
+		</div>
+	`;
+
+	const style = document.createElement('style');
+	style.textContent = `
+		.maintenance-gate {
+			min-height: 100vh;
+			display: grid;
+			place-items: center;
+			background: radial-gradient(circle at top, rgba(183, 144, 85, 0.2), rgba(0, 0, 0, 0.92));
+			color: #f5f5f5;
+			padding: 24px;
+			text-align: center;
+			font-family: 'Open Sans', sans-serif;
+		}
+		.maintenance-gate__card {
+			max-width: 520px;
+			padding: 28px;
+			border-radius: 18px;
+			background: rgba(0, 0, 0, 0.6);
+			border: 1px solid rgba(255, 255, 255, 0.1);
+			box-shadow: 0 24px 40px rgba(0, 0, 0, 0.4);
+		}
+		.maintenance-gate__label {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			padding: 6px 12px;
+			border-radius: 999px;
+			background: rgba(183, 144, 85, 0.2);
+			border: 1px solid rgba(183, 144, 85, 0.4);
+			font-size: 0.75rem;
+			letter-spacing: 0.18rem;
+			text-transform: uppercase;
+			margin-bottom: 16px;
+		}
+		.maintenance-gate__card h1 {
+			font-size: 1.4rem;
+			margin-bottom: 12px;
+		}
+		.maintenance-gate__card p {
+			color: rgba(255, 255, 255, 0.7);
+			line-height: 1.5;
+		}
+	`;
+
+	document.head.appendChild(style);
+	document.body.innerHTML = '';
+	document.body.appendChild(wrapper);
+}
+
 function getLoginFallback() {
 	const candidate = document.body?.dataset.loginPage?.trim();
 	return candidate || 'HTML/login.html';
+}
+
+function getCookieValue(name) {
+	if (!name || typeof document === 'undefined') {
+		return null;
+	}
+	const cookies = document.cookie ? document.cookie.split(';') : [];
+	for (const cookie of cookies) {
+		const [rawKey, ...rest] = cookie.trim().split('=');
+		if (rawKey === name) {
+			return decodeURIComponent(rest.join('='));
+		}
+	}
+	return null;
 }
 
 function parseJwt(token) {
@@ -256,6 +403,10 @@ async function fetchAccountSession(authConfig) {
 		}
 
 		const payload = await response.json();
+		if (payload?.success && !payload?.user) {
+			clearStoredAuthSession();
+			return { status: 'anonymous', user: null, verified: true };
+		}
 		if (!payload?.success || !payload?.user) {
 			throw new Error('Invalid session payload.');
 		}
@@ -276,12 +427,14 @@ async function fetchAccountSession(authConfig) {
 
 async function performLogout(authConfig) {
 	try {
+		const csrfToken = getCookieValue(AUTH_CSRF_COOKIE_NAME);
 		const response = await fetch(authConfig.logout, {
 			method: 'POST',
 			credentials: 'include',
 			headers: {
 				Accept: 'application/json',
-				'Content-Type': 'application/json'
+				'Content-Type': 'application/json',
+				...(csrfToken ? { 'x-csrf-token': csrfToken } : {})
 			}
 		});
 		if (!response.ok && response.status !== 401 && response.status !== 403) {
@@ -324,14 +477,17 @@ function updateAccountMenuItems(items, state) {
 			isVisible = state.status === 'authenticated' && requiredRoles.includes(role);
 		}
 
+		const descendants = Array.from(item.querySelectorAll('[hidden]'));
 		if (isVisible) {
 			item.hidden = false;
 			item.removeAttribute('aria-hidden');
 			item.classList.remove('is-hidden');
+			descendants.forEach((child) => child.removeAttribute('hidden'));
 		} else {
 			item.hidden = true;
 			item.setAttribute('aria-hidden', 'true');
 			item.classList.add('is-hidden');
+			descendants.forEach((child) => child.setAttribute('hidden', ''));
 		}
 	});
 }
@@ -381,6 +537,7 @@ function collectDomReferences() {
 	const inventoryStatus = document.querySelector('[data-inventory-status]');
 	const inventoryTemplate = document.querySelector('[data-car-card-template]');
 	const cookieConsent = document.querySelector('[data-cookie-consent]');
+	const accountPanelRoot = document.querySelector('[data-account-panel]');
 
 	return {
 		body: document.body,
@@ -425,6 +582,16 @@ function collectDomReferences() {
 			label: accountTrigger?.querySelector('[data-account-label]') ?? null,
 			items: accountSubmenu ? Array.from(accountSubmenu.querySelectorAll('[data-account-item]')) : [],
 			logout: accountSubmenu?.querySelector('[data-account-logout]') ?? null
+		},
+		accountPanel: {
+			root: accountPanelRoot ?? null,
+			toggle: document.querySelector('[data-account-panel-toggle]') ?? null,
+			close: accountPanelRoot?.querySelector('[data-account-panel-close]') ?? null,
+			logout: accountPanelRoot?.querySelector('[data-account-panel-logout]') ?? null,
+			name: accountPanelRoot?.querySelector('[data-account-name]') ?? null,
+			role: accountPanelRoot?.querySelector('[data-account-role]') ?? null,
+			email: accountPanelRoot?.querySelector('[data-account-email]') ?? null,
+			id: accountPanelRoot?.querySelector('[data-account-id]') ?? null
 		},
 		themeToggle: document.getElementById('theme-toggle'),
 		heroSlides: Array.from(document.querySelectorAll('.hero-slide')),
@@ -1822,6 +1989,115 @@ function initializeAccountMenu(dom) {
 		if (resolvedState.status === 'anonymous' && !resolvedState.verified && currentAccountState.status !== 'authenticated') {
 			setAccountState(resolvedState);
 		}
+	});
+}
+
+// Painel de conta -----------------------------------------------------------
+
+function initializeAccountPanel(dom) {
+	const panel = dom.accountPanel?.root;
+	if (!panel) {
+		return;
+	}
+
+	const authConfig = getAuthConfig(dom);
+	const { toggle, close, logout: logoutButton, name, role, email, id } = dom.accountPanel;
+	let isOpen = false;
+	let currentState = { status: 'anonymous', user: null, verified: false };
+
+	const setText = (element, value) => {
+		if (!element) {
+			return;
+		}
+		element.textContent = value || '—';
+	};
+
+	const setOpen = (open) => {
+		isOpen = open;
+		if (open) {
+			panel.hidden = false;
+			panel.setAttribute('aria-hidden', 'false');
+			panel.classList.add('is-open');
+			return;
+		}
+		panel.hidden = true;
+		panel.setAttribute('aria-hidden', 'true');
+		panel.classList.remove('is-open');
+	};
+
+	const applyState = (state) => {
+		currentState = state || { status: 'anonymous', user: null, verified: false };
+		if (currentState.status !== 'authenticated') {
+			setOpen(false);
+			return;
+		}
+
+		const user = currentState.user || {};
+		setText(name, user.username || 'Usuario');
+		setText(role, user.role || 'cliente');
+		setText(email, user.email || '—');
+		setText(id, user.id || '—');
+	};
+
+	const handleToggle = (event) => {
+		if (event) {
+			event.preventDefault();
+		}
+		if (currentState.status !== 'authenticated') {
+			return;
+		}
+		setOpen(!isOpen);
+	};
+
+	if (toggle) {
+		toggle.addEventListener('click', handleToggle);
+	}
+
+	if (close) {
+		close.addEventListener('click', () => setOpen(false));
+	}
+
+	panel.addEventListener('click', (event) => {
+		if (event.target === panel) {
+			setOpen(false);
+		}
+	});
+
+	document.addEventListener('keydown', (event) => {
+		if (event.key === 'Escape' && isOpen) {
+			setOpen(false);
+		}
+	});
+
+	if (logoutButton instanceof HTMLButtonElement) {
+		logoutButton.addEventListener('click', async () => {
+			if (logoutButton.disabled) {
+				return;
+			}
+			logoutButton.disabled = true;
+			await logout(authConfig);
+			applyState({ status: 'anonymous', user: null, verified: true });
+			logoutButton.disabled = false;
+		});
+	}
+
+	const storedSession = readStoredAuthSession();
+	const storedUser = storedSession?.user ? normalizeUserPayload(storedSession.user) : null;
+	if (storedUser) {
+		applyState({ status: 'authenticated', user: storedUser, verified: false, source: 'storage' });
+	} else {
+		const tokenUser = getUserFromToken(getStoredToken());
+		if (tokenUser) {
+			applyState({ status: 'authenticated', user: tokenUser, verified: false, source: 'token' });
+		}
+	}
+
+	window.addEventListener('garage:auth-state', (event) => {
+		applyState(event.detail);
+	});
+
+	window.addEventListener('garage:auth-logout', () => {
+		setOpen(false);
 	});
 }
 

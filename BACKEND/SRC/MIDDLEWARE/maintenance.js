@@ -40,6 +40,27 @@ const isAdminToken = async (req) => {
     }
 };
 
+const PAGE_PATHS = {
+    ads: ['/cars'],
+    feedback: ['/feedback'],
+    cadastro: ['/auth/register', '/auth/signup'],
+    login: ['/auth/login']
+};
+
+const shouldBlockPath = (reqPath, pages) => {
+    if (!Array.isArray(pages) || pages.length === 0) {
+        return false;
+    }
+
+    return pages.some((page) => {
+        const prefixes = PAGE_PATHS[page];
+        if (!prefixes) {
+            return false;
+        }
+        return prefixes.some((prefix) => reqPath === prefix || reqPath.startsWith(`${prefix}/`));
+    });
+};
+
 const fetchMaintenanceState = async () => {
     if (cachedState && Date.now() - cachedAt < CACHE_TTL_MS) {
         return cachedState;
@@ -47,7 +68,8 @@ const fetchMaintenanceState = async () => {
 
     const record = await Mongo.db.collection('system_settings').findOne({ key: 'maintenance' });
     const enabled = Boolean(record?.enabled);
-    cachedState = { enabled, updatedAt: record?.updatedAt || null };
+    const pages = Array.isArray(record?.pages) ? record.pages : [];
+    cachedState = { enabled, pages, updatedAt: record?.updatedAt || null };
     cachedAt = Date.now();
     return cachedState;
 };
@@ -57,13 +79,18 @@ export const maintenanceGate = async (req, res, next) => {
         return next();
     }
 
-    if (req.path === '/auth/login') {
+    if (req.path === '/maintenance') {
         return next();
     }
+
 
     try {
         const state = await fetchMaintenanceState();
         if (!state.enabled) {
+            return next();
+        }
+
+        if (!shouldBlockPath(req.path, state.pages)) {
             return next();
         }
 

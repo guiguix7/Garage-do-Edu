@@ -15,16 +15,17 @@
     <link rel="stylesheet" href="../CSS/admin.css">
 </head>
 
-<body data-auth-endpoint="http://localhost:3000/auth" data-guard="admin">
+<body data-auth-endpoint="http://localhost:3000/auth" data-user-endpoint="http://localhost:3000/user"
+    data-cars-endpoint="http://localhost:3000/cars" data-feedback-endpoint="http://localhost:3000/feedback"
+    data-health-endpoint="http://localhost:3000/health" data-login-page="login.html" data-guard="admin">
     <header class="admin-header">
         <div class="admin-header__top">
             <div class="admin-brand">
-                <img src="../ASSETS/IMG/garage do edu logo.jpg" alt="Logo Garage do Edu" class="admin-brand__logo">
+                <img src="../SRC/ASSETS/IMG/garage do edu logo.jpg" alt="Logo Garage do Edu" class="admin-brand__logo">
                 <div class="admin-brand__text">
                     <span>Painel Administrador</span>
                     <h1>Garage do Edu</h1>
                 </div>
-                <hr class="admin-brand__divider"> <!-- Linha vertical divisória -->
             </div>
             <!-- ???? -->
             <div class="admin-actions">
@@ -35,26 +36,53 @@
                 </button>
                 <div class="admin-session">
                     <span class="admin-session__greeting">Bem-vindo</span>
+                    <!-- Alterar para 'Bom Dia', 'Boa Tarde' ou 'Boa Noite', de acordo com o horário -->
                     <strong id="admin-name" class="admin-session__name">Usuário</strong>
+                    <!-- Substituir por nome do usuário logado -->
                 </div>
+                <button class="admin-refresh" type="button" data-admin-refresh>Atualizar dados</button>
                 <nav class="admin-quick-links" aria-label="Atalhos do painel">
+                    <!-- Links rápidos para outras áreas do site -->
                     <a href="../../index.html">Site</a>
                     <a href="../HTML/feedback.html">Feedback</a>
                 </nav>
                 <div class="admin-profile">
                     <button class="admin-profile__trigger" type="button" aria-haspopup="true" aria-expanded="false">
-                        <img src="../ASSETS/IMG/garage do edu logo.jpg" alt="Avatar administrador">
+                        <img src="../SRC/ASSETS/IMG/garage do edu logo.jpg" alt="Avatar administrador">
                     </button>
+                    <!-- Menu de opções do perfil (Finalizar, Estilizar, Automatizar) -->
                     <ul class="admin-profile__menu" role="menu">
-                        <li class="submenu-item submenu-theme" role="none">
-                        <li class="menuitem"><button>Tema</button><!-- Tema Claro/Escuro (futuro)-->
+                        <li class="submenu-item" role="none" data-account-item data-account-visible="authenticated">
+                            <a role="menuitem" href="#" data-auth-required="authenticated">Minha Conta</a>
+                        </li>
+                        <!-- Partner's Account Only -->
+                        <li class="submenu-item" role="none" data-account-item data-account-visible="authenticated"
+                            data-account-role="partner">
+                            <a role="menuitem" href="ad_create.html" data-auth-required="authenticated"
+                                data-auth-roles="partner" data-auth-fallback="login.html">Meus
+                                Anúncios</a>
+                        </li>
+                        <!-- Admin's Account Only -->
+                        <li class="submenu-item" role="none" data-account-item data-account-visible="authenticated"
+                            data-account-role="admin">
+                            <a role="menuitem" href="admin.html" data-auth-required="authenticated"
+                                data-auth-roles="admin">Painel
+                                Administrativo</a>
+                        </li>
+                        <!-- Always visible -->
+                        <li class="submenu-item submenu-configs" role="none" data-account-item>
+                            <a href="#configuracoes" role="menuitem">Configurações</a>
+                        </li>
+                        <li class="submenu-item submenu-theme" role="none" data-account-item>
+                            <span class="submenu-label" id="theme-toggle-label">Tema</span>
+                            <!-- Tema Claro/Escuro (futuro)-->
                             <label class="on-off" for="theme-toggle">
-                                <input id="theme-toggle" type="checkbox" aria-label="Alternar tema claro e escuro">
+                                <input id="theme-toggle" type="checkbox" aria-labelledby="theme-toggle-label"
+                                    data-admin-theme-toggle>
                                 <span class="slider" aria-hidden="true"></span>
                             </label>
                         </li>
-                        </li>
-                        <li role="menuitem"><button type="button" data-admin-logout>Sair</button></li>
+                        <li class="submenu-item" role="none"><button type="button" data-admin-logout>Sair</button></li>
                     </ul>
                 </div>
             </div>
@@ -92,33 +120,69 @@
                     <p>Informações em tempo real das principais métricas do negócio.</p>
                 </div>
             </header>
+            <section class="admin-status" aria-label="Status do sistema">
+                <div class="admin-status__card">
+                    <span class="admin-status__label">API</span>
+                    <span class="admin-badge admin-badge--neutral" data-admin-status="api">Verificando</span>
+                </div>
+                <div class="admin-status__card">
+                    <span class="admin-status__label">Autenticação</span>
+                    <span class="admin-badge admin-badge--neutral" data-admin-status="auth">Validando</span>
+                </div>
+                <div class="admin-status__card">
+                    <span class="admin-status__label">Manutenção</span>
+                    <span class="admin-badge admin-badge--neutral" data-admin-status="maintenance">Carregando</span>
+                </div>
+                <div class="admin-status__card">
+                    <span class="admin-status__label">Última atualização</span>
+                    <span class="admin-status__value" data-admin-last-update>--</span>
+                </div>
+            </section>
             <div class="admin-kpis">
                 <article class="admin-card admin-card--primary">
+                    <!-- Cartão de métrica principal -->
                     <div class="admin-card__header">
+                        <!-- Total de anúncios ativos (available = true) -->
                         <span class="admin-card__label">Anúncios ativos</span>
                     </div>
-                    <strong class="admin-card__value">150</strong>
-                </article>
-                <article class="admin-card admin-card--accent">
-                    <div class="admin-card__header">
-                        <span class="admin-card__label">Clientes cadastrados</span>
-                    </div>
-                    <strong class="admin-card__value">320</strong>
+                    <strong class="admin-card__value" id="available_ads">000</strong>
                 </article>
                 <article class="admin-card admin-card--surface">
                     <div class="admin-card__header">
+                        <span class="admin-card__label">Anúncios totais</span>
+                    </div>
+                    <strong class="admin-card__value" id="total_ads">000</strong>
+                </article>
+                <article class="admin-card admin-card--accent">
+                    <div class="admin-card__header">
+                        <!-- Total de clientes cadastrados -->
+                        <span class="admin-card__label">Clientes cadastrados</span>
+                    </div>
+                    <strong class="admin-card__value" id="total_customers">000</strong>
+                </article>
+                <article class="admin-card admin-card--surface">
+                    <div class="admin-card__header">
+                        <span class="admin-card__label">Carros vendidos</span>
+                    </div>
+                    <strong class="admin-card__value" id="sold_cars">000</strong>
+                    <p class="admin-card__meta">Diferença entre totais e disponíveis</p>
+                </article>
+                <article class="admin-card admin-card--surface">
+                    <div class="admin-card__header">
+                        <!-- Total de parceiros ativos (role = partner) -->
                         <span class="admin-card__label">Parceiros</span>
                     </div>
-                    <strong class="admin-card__value">18</strong>
+                    <strong class="admin-card__value" id="total_partners">000</strong>
                     <p class="admin-card__meta">Contas de parceiros ativos</p>
                 </article>
                 <article class="admin-card admin-card--surface">
                     <div class="admin-card__header">
+                        <!-- Feedback médio do site (average rating) -->
                         <span class="admin-card__label">Feedback médio</span>
-                        <span class="admin-card__badge">4.9</span>
+                        <span class="admin-card__badge" id="average_rating">0.0</span>
                     </div>
-                    <strong class="admin-card__value">★★★★★</strong>
-                    <p class="admin-card__meta">126 avaliações ao todo</p>
+                    <strong class="admin-card__value" id="rating_stars">★★★★★</strong>
+                    <p class="admin-card__meta" id="total_reviews">000 avaliações</p>
                 </article>
             </div>
 
@@ -129,54 +193,91 @@
                             <h3>Últimos anúncios</h3>
                             <p>Conteúdo recém-publicado aguardando validação.</p>
                         </div>
-                        <button class="admin-panel__action" type="button">Ver todos</button>
+                        <button class="admin-panel__action" type="button" data-admin-refresh>Atualizar lista</button>
                     </header>
-                    <table class="admin-table" aria-label="Tabela de anúncios recentes">
-                        <thead>
-                            <tr>
-                                <th scope="col">Veículo</th>
-                                <th scope="col">Categoria</th>
-                                <th scope="col">Status</th>
-                                <th scope="col">Atualizado</th>
-                                <th scope="col">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Chevrolet Opala SS 1978</td>
-                                <td>Coupé</td>
-                                <td><span class="status-pill status-pill--success">Publicado</span></td>
-                                <td>há 2 horas</td>
-                                <td><button type="button" class="link-button">Editar</button></td>
-                            </tr>
-                            <tr>
-                                <td>Ford Maverick GT 1974</td>
-                                <td>Muscle</td>
-                                <td><span class="status-pill status-pill--warning">Revisão</span></td>
-                                <td>há 5 horas</td>
-                                <td><button type="button" class="link-button">Revisar</button></td>
-                            </tr>
-                            <tr>
-                                <td>Volkswagen Fusca 1968</td>
-                                <td>Clássico</td>
-                                <td><span class="status-pill status-pill--neutral">Rascunho</span></td>
-                                <td>há 1 dia</td>
-                                <td><button type="button" class="link-button">Publicar</button></td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <div class="admin-table-wrapper">
+                        <table class="admin-table" aria-label="Tabela de anúncios recentes">
+                            <!-- log dos ultimos anúncios -->
+                            <thead>
+                                <tr>
+                                    <th scope="col">Veículo</th>
+                                    <th scope="col">Categoria</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col">Horário</th>
+                                    <th scope="col">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody data-admin-cars>
+                                <tr class="admin-empty">
+                                    <td colspan="5">Carregando anúncios...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </article>
-                <!-- Estatísticas
+                <article class="admin-panel" id="clientes">
+                    <header class="admin-panel__header">
+                        <div>
+                            <h3>Clientes recentes</h3>
+                            <p>Usuários mais recentes e status de acesso.</p>
+                        </div>
+                        <button class="admin-panel__action" type="button" data-admin-refresh>Atualizar clientes</button>
+                    </header>
+                    <div class="admin-table-wrapper">
+                        <table class="admin-table" aria-label="Tabela de clientes">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Cliente</th>
+                                    <th scope="col">E-mail</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody data-admin-users>
+                                <tr class="admin-empty">
+                                    <td colspan="4">Carregando usuários...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </article>
+                <article class="admin-panel" id="parceiros">
+                    <header class="admin-panel__header">
+                        <div>
+                            <h3>Parceiros ativos</h3>
+                            <p>Contas parceiras e status de publicação.</p>
+                        </div>
+                        <button class="admin-panel__action" type="button" data-admin-refresh>Atualizar
+                            parceiros</button>
+                    </header>
+                    <div class="admin-table-wrapper">
+                        <table class="admin-table" aria-label="Tabela de parceiros">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Parceiro</th>
+                                    <th scope="col">E-mail</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody data-admin-partners>
+                                <tr class="admin-empty">
+                                    <td colspan="4">Carregando parceiros...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </article>
                 <article class="admin-panel" id="estatisticas">
                     <header class="admin-panel__header">
                         <div>
                             <h3>Desempenho mensal</h3>
-                            <p>Comparativo de visitas e leads gerados por canal.</p>
+                            <p>Grafico de estatísticas mensais.</p>
                         </div>
                         <div class="admin-panel__filters">
                             <button type="button" class="link-button is-active">Visitas</button>
-                            <button type="button" class="link-button">Leads</button>
-                            <button type="button" class="link-button">Conversões</button>
+                            <button type="button" class="link-button">Vendas</button>
+                            <button type="button" class="link-button">Avaliações</button>
                         </div>
                     </header>
                     <div class="admin-chart" role="img" aria-label="Gráfico de barras ilustrativo">
@@ -200,39 +301,76 @@
                         </div>
                     </div>
                 </article>
-            -->
+                <article class="admin-panel admin-panel--surface" id="configuracoes">
+                    <header class="admin-panel__header">
+                        <div>
+                            <h3>Configurações</h3>
+                            <p>Controle de manutenção e ajustes do sistema.</p>
+                        </div>
+                        <button class="admin-panel__action" type="button" data-admin-refresh>Atualizar</button>
+                    </header>
+                    <div class="admin-settings">
+                        <div class="admin-setting">
+                            <div>
+                                <strong>Modo manutenção</strong>
+                                <p>Bloqueia acessos públicos durante atualizações.</p>
+                            </div>
+                            <label class="admin-switch" for="maintenance-toggle">
+                                <input id="maintenance-toggle" type="checkbox" data-admin-maintenance>
+                                <span class="admin-switch__slider" aria-hidden="true"></span>
+                            </label>
+                            <span class="admin-badge admin-badge--neutral"
+                                data-admin-maintenance-label>Carregando</span>
+                        </div>
+                        <div class="admin-setting admin-setting--stack">
+                            <div>
+                                <strong>Selecionar páginas</strong>
+                                <p>Escolha quais áreas serão desativadas quando o modo estiver ativo.</p>
+                            </div>
+                            <ul class="admin-maintenance-pages" data-admin-maintenance-pages>
+                                <li>
+                                    <label><input type="checkbox" data-maintenance-page="home"> Home</label>
+                                </li>
+                                <li>
+                                    <label><input type="checkbox" data-maintenance-page="ads"> Anúncios</label>
+                                </li>
+                                <li>
+                                    <label><input type="checkbox" data-maintenance-page="feedback"> Feedback</label>
+                                </li>
+                                <li>
+                                    <label><input type="checkbox" data-maintenance-page="cadastro"> Cadastro</label>
+                                </li>
+                                <li>
+                                    <label><input type="checkbox" data-maintenance-page="login"> Login</label>
+                                </li>
+                                <li>
+                                    <label><input type="checkbox" data-maintenance-page="politica-privacidade"> Política de Privacidade</label>
+                                </li>
+                            </ul>
+                            <span class="admin-card__meta">As páginas selecionadas ficarão indisponíveis para visitantes.</span>
+                        </div>
+                        <div class="admin-setting">
+                            <div>
+                                <strong>Última sincronização</strong>
+                                <p data-admin-last-update>--</p>
+                            </div>
+                            <span class="admin-card__meta">Sincronização com API</span>
+                        </div>
+                    </div>
+                </article>
                 <article class="admin-panel admin-panel--surface" id="logs">
                     <header class="admin-panel__header">
                         <div>
                             <h3>Atividades recentes</h3>
                             <p>Log das últimas 24hrs registrados na plataforma.</p>
                         </div>
-                        <button class="admin-panel__action" type="button">Ver histórico completo</button>
+                        <button class="admin-panel__action" type="button" data-admin-refresh>Atualizar logs</button>
                     </header>
-                    <ul class="admin-timeline" aria-label="Linha do tempo de atividades">
-                        <li>
-                            <span class="admin-timeline__time">09:15</span>
-                            <div class="admin-timeline__content">
-                                <strong>Cadastro realizado</strong>
-                                <p><strong id="user">rosana123</strong> cadastrou-se na plataforma.</p>
-                            </div>
-                        </li>
-                        <li>
-                            <span class="admin-timeline__time">08:47</span>
-                            <div class="admin-timeline__content">
-                                <strong>Anúncio atualizado</strong>
-                                <p>Chevrolet Opala SS 1978 recebeu novas fotos.</p>
-                            </div>
-                        </li>
-                        <li>
-                            <span class="admin-timeline__time">Ontem</span>
-                            <div class="admin-timeline__content">
-                                <strong>Novo feedback recebido</strong>
-                                <p>andrecorsa avaliou o site.</p>
-                            </div>
-                        </li>
+                    <ul class="admin-timeline" aria-label="Linha do tempo de atividades" data-admin-logs>
+                        <li class="admin-empty">Carregando logs...</li>
                     </ul>
                 </article>
+
 
                 <article class="admin-panel admin-panel--surface" id="suporte">
                     <header class="admin-panel__header">
@@ -240,32 +378,25 @@
                             <h3>Central de suporte</h3>
                             <p>Organize as demandas abertas pelos canais de atendimento.</p>
                         </div>
-                        <button class="admin-panel__action" type="button">Abrir chamado</button>
+                        <button class="admin-panel__action" type="button" data-admin-refresh>Atualizar suporte</button>
                     </header>
                     <div class="admin-support">
                         <div class="admin-support__column">
-                            <h4>Em aberto</h4>
-                            <ul>
-                                <li>
-                                    <strong>Atualização de planos</strong>
-                                    <span>Pedido por Ricardo Martins</span>
-                                </li>
-                                <li>
-                                    <strong>Erro ao enviar fotos</strong>
-                                    <span>Reportado por Camila Freitas</span>
-                                </li>
+                            <h4>Feedback recente</h4>
+                            <ul data-admin-feedback>
+                                <li class="admin-empty">Carregando feedback...</li>
                             </ul>
                         </div>
                         <div class="admin-support__column">
-                            <h4>Em andamento</h4>
+                            <h4>Pedidos internos</h4>
                             <ul>
                                 <li>
-                                    <strong>Integração com CRM</strong>
-                                    <span>Agendado com equipe técnica</span>
+                                    <strong>Revisar novos cadastros</strong>
+                                    <span>Clientes aguardando aprovação interna</span>
                                 </li>
                                 <li>
-                                    <strong>Revisão de contrato</strong>
-                                    <span>Responsável: Gabriela</span>
+                                    <a href="#clientes"><strong>Ver clientes</strong></a>
+                                    <a href="#anuncios"><strong>Revisar anúncios</strong></a>
                                 </li>
                             </ul>
                         </div>

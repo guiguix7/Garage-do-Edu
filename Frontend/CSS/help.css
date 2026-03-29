@@ -151,7 +151,7 @@ html[data-theme="light"] .policy-section {
 }
 
 .policy-section--accent {
-    background: linear-gradient(135deg, rgba(53, 52, 57, 0.75), rgba(183, 144, 85, 0.35));
+    background: rgba(45, 45, 47, 0.75);
     border-color: rgba(183, 144, 85, 0.65);
 }
 
@@ -397,6 +397,58 @@ html[data-theme="light"] .policy-form textarea {
 html[data-theme="light"] .policy-highlight {
     background: rgba(183, 144, 85, 0.15);
     border-color: rgba(183, 144, 85, 0.35);
+}
+
+@media (max-width: 1024px) {
+    .backgrond-header {
+        padding: 36px;
+    }
+
+    .header-nave ul {
+        flex-wrap: wrap;
+        gap: 20px 32px;
+    }
+
+    .policy-section {
+        padding: 40px;
+    }
+}
+
+@media (max-width: 600px) {
+    .backgrond-header {
+        margin: 12px;
+        padding: 24px;
+        border-radius: 18px;
+    }
+
+    .policy-main {
+        padding: calc(var(--header-top-offset) + 16px) 16px 80px;
+    }
+
+    .policy-section {
+        padding: 28px;
+        border-radius: 18px;
+    }
+
+    .policy-header h1 {
+        font-size: 2.05rem;
+    }
+
+    .policy-form .form-row {
+        flex-direction: column;
+    }
+
+    .policy-steps li {
+        padding-left: 48px;
+        min-height: 40px;
+    }
+
+    .policy-steps li::before {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        font-size: 0.85rem;
+    }
 }
 
 html[data-theme="light"] .policy-highlight__title {

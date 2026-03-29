@@ -26,10 +26,10 @@ app.use(express.json({ limit: '1mb' })); // Middleware para parsear JSON
 app.get('/health', (req, res) => {
     res.status(200).json({
         success: true,
-        statuscode: 200,
+        statusCode: 200,
         info: 'API da Garage do Edu',
         body: 'API is running',
-        Timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString()
     });
 })
 
@@ -40,6 +40,7 @@ const allowedOrigins = (process.env.CORS_ORIGINS || 'http://localhost:5173,http:
     .filter(Boolean);
 const allowAll = allowedOrigins.includes('*');
 
+// Configurações de CORS
 const corsOptions = {
     origin: (origin, callback) => {
         if (!origin || allowAll || allowedOrigins.includes(origin)) {
@@ -57,6 +58,7 @@ app.use(
 );
 app.use(cors(corsOptions)); // Middleware para habilitar CORS com as opções definidas
 
+// Função principal para iniciar o servidor
 async function main() {
     const hostname = 'localhost';
     const port = process.env.PORT || 3000;
@@ -72,6 +74,30 @@ async function main() {
     app.locals.db = db;
 
     app.use(maintenanceGate);
+
+    app.get('/maintenance', async (req, res) => {
+        try {
+            const record = await req.app.locals.db.collection('system_settings').findOne({ key: 'maintenance' });
+            const enabled = Boolean(record?.enabled);
+            const pages = Array.isArray(record?.pages) ? record.pages : [];
+
+            res.json({
+                success: true,
+                statusCode: 200,
+                body: {
+                    enabled,
+                    pages,
+                    updatedAt: record?.updatedAt || null
+                }
+            });
+        } catch (error) {
+            res.status(500).json({
+                success: false,
+                statusCode: 500,
+                message: 'Failed to read maintenance state.'
+            });
+        }
+    });
 
 
     // Rotas PÚBLICAS (sem autenticação)

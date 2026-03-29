@@ -52,6 +52,15 @@ carRouter.get('/availables', async (req, res, next) => {
     }
 });
 
+carRouter.get('/pending', authenticateToken, checkRole('admin'), async (req, res, next) => {
+    try {
+        const { success, statusCode, body } = await carsController.getPendingCars();
+        res.status(statusCode).send({ success, statusCode, body });
+    } catch (error) {
+        next(error);
+    }
+});
+
 carRouter.post('/pending', authenticateToken, checkRole('client'), validateBody(carCreateSchema), async (req, res, next) => {
     try {
         // Clientes enviam para revisao; evita publicacao direta sem aprovacao.

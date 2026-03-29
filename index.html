@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Garage do Edu - Venda de carros clássicos e antigos em Salto/SP.">
+    <meta name="description"
+        content="Garage do Edu - Venda de carros clássicos e antigos em Salto/SP, temos certificado placa preta.">
     <meta name="keywords"
         content="Carros clássicos, carros antigos, venda de carros, Salto SP, Garage do Edu, veículos raros, estação raridades">
     <meta name="author" content="Dono do site: Eduardo Arcos, Desenvolvedor: Guilherme Andraz">
@@ -18,18 +19,14 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap"
         rel="stylesheet">
-    <!-- Melhorar e acrescentar metadados (futuro) -->
-    <!-- Ligação com fontes (futuro) -->
-    <!-- Ligação com ícones (futuro) -->
 </head>
 
 <body data-auth-endpoint="http://localhost:3000/auth" data-inventory-endpoint="http://localhost:3000/cars"
     data-inventory-detail="Frontend/HTML/anuncio.html" data-login-page="Frontend/HTML/login.html">
     <header>
         <!-- Topo do Header -->
-        <div class="header-top"> <!-- Definir cor e mudar layout (futuro) -->
+        <div class="header-top"> <!-- Definir cor (futuro) -->
             <div class="social-header">
-                <!-- Link de redes sociais (futuro) -->
                 <a href="https://www.instagram.com/garage_do_edu/" target="_blank"><img
                         src="Frontend/SRC/ASSETS/IMG/instagram.png" alt="Logo do Instagram " class="logo-sociais"></a>
                 <a href="https://www.facebook.com/p/Garage-do-Edu-61550883566176/" target="_blank"><img
@@ -41,11 +38,12 @@
                 <span class="info">Atendimento em Salto/SP - Retirada local | Trocas aceitas</span>
                 <div class="phone">
                     <a href="https://wa.me/5511963152153" target="_blank"><img
-                            src="Frontend/SRC/ASSETS/IMG/bolha-de-bate-papo.png" alt="Icone do WhatsApp"
-                            class="logo-sociais"></a><span>11
+                            src="Frontend/SRC/ASSETS/IMG/bolha-de-bate-papo.png"
+                            alt="Icone do WhatsApp que leva para o contato" class="logo-sociais"></a><span>11
                         96315-2153</span>
                 </div>
                 <div class="search-style">
+                    <!-- Função de busca (deve funcionar como um buscador de palavras que irá procurar pela palavra digitada em toda a página) -->
                     <input type="search" placeholder="Buscar" id="search-input" aria-label="Campo de busca no site">
                     <button class="search-mecanism" type="button" aria-label="Buscar no site" id="send-search">
                         <!-- Fazer funcionalidade de busca (futuro) -->
@@ -56,13 +54,13 @@
                 </div>
             </div>
             <div class="links-header">
-                <a href="#plans-grid">Anuncie Já</a> <!-- Colocar animação (futuro) -->
+                <a href="#plans-grid">Anuncie Já</a>
                 <div class="dropdown-header">
                     <div class="myacount">
                         <button class="account-trigger" type="button" aria-haspopup="true" aria-expanded="false"
                             data-account-base-label="Minha Conta">
                             <img src="Frontend/SRC/ASSETS/IMG/forma-removebg-preview.png" alt="Icone de seta pra baixo"
-                                class="icone-seta"><span data-account-label>Minha Conta</span>
+                                class="icone-seta"><span data-account-label id="text-ma">Minha Conta</span>
                         </button>
                         <ul class="submenu" role="menu" data-account-menu>
                             <!-- Guest only -->
@@ -72,24 +70,26 @@
                             <!-- Authenticated users -->
                             <li class="submenu-item" role="none" data-account-item data-account-visible="authenticated">
                                 <a href="#"><button type="button" role="menuitem" data-account-logout
-                                        id="logout-button">Logout</button></a>
+                                        id="logout-button" hidden>Logout</button></a>
                             </li>
+                            <!-- Adicionar html via js quando o role for definido -->
                             <li class="submenu-item" role="none" data-account-item data-account-visible="authenticated">
-                                <a role="menuitem" href="#" data-auth-required="authenticated">Minha Conta</a>
+                                <a role="menuitem" href="#" data-auth-required="authenticated"
+                                    data-account-panel-toggle hidden>Minha Conta</a>
                             </li>
                             <!-- Partner's Account Only -->
                             <li class="submenu-item" role="none" data-account-item data-account-visible="authenticated"
                                 data-account-role="partner">
                                 <a role="menuitem" href="Frontend/HTML/ad_create.html"
                                     data-auth-required="authenticated" data-auth-roles="partner"
-                                    data-auth-fallback="Frontend/HTML/login.html">Meus Anúncios</a>
+                                    data-auth-fallback="Frontend/HTML/login.html" hidden>Meus Anúncios (Parceiro)</a>
                             </li>
                             <!-- Admin's Account Only -->
                             <li class="submenu-item" role="none" data-account-item data-account-visible="authenticated"
                                 data-account-role="admin">
                                 <a role="menuitem" href="Frontend/HTML/admin.html" data-auth-required="authenticated"
-                                    data-auth-roles="admin">Painel
-                                    Administrativo</a>
+                                    data-auth-roles="admin" hidden>Painel
+                                    Administrativo (Admin)</a>
                             </li>
                             <!-- Always visible -->
                             <li class="submenu-item submenu-configs" role="none" data-account-item>
@@ -120,7 +120,7 @@
                     <li><a href="#ads">Anúncios</a></li>
                     <li><a href="#destaques">Parceiros</a></li>
                     <li><a href="#vendido">Vendidos</a></li>
-                    <li><a href="#sobre">Sobre Nós</a></li>
+                    <li><a href="#about-grid">Sobre Nós</a></li>
                     <li><a href="#contato">Contato</a></li>
                 </ul>
             </nav>
@@ -157,12 +157,12 @@
             </div>
             <div class="hero-overlay" data-reveal>
                 <span class="hero-tag">Vistoria/Certificação</span>
-                <h2>Quer Possuir sua Placa Preta de Colecionador? Somos Credenciados.</h2>
+                <h2>Quer possuir sua placa preta de colecionador? Somos credenciados.</h2>
                 <p>Entre em contato pelo WhatsApp!</p>
                 <div class="hero-actions">
                     <a class="cta whatsapp"
                         href="https://wa.me/5511963152153?text=Ol%C3%A1%20Eduardo%2C%20cheguei%20pelas%20placas%20pretas%20do%20site.%20Pode%20me%20ajudar%3F"
-                        target="_blank" rel="noopener">Entrar em contato</a>
+                        target="_blank" rel="noopener">Falar com Eduardo</a>
                 </div>
             </div>
         </div>
@@ -170,11 +170,10 @@
     <!-- Fim do Header & Começo do Main -->
     <main>
         <!-- Seção de anúncios -->
-        <!-- A seção de anuncios deve mostrar 4 anuncios predefinidos (se houver), caso o cliente clique em "Ver detalhes" deve expandir e mostrar todos os anuncios ativos -->
         <section id="estoque" class="inventory">
             <div class="section-heading" data-reveal>
                 <h2>Anúncios</h2>
-                <p>Da uma olhadas nas nossas jóias.</p>
+                <p>Dê uma olhada nas nossas joias.</p>
             </div>
             <div class="inventory-filters" role="group" aria-label="Filtrar anúncios" id="ads">
                 <div class="filter-select filter-select--checkbox" data-reveal data-brand-select>
@@ -275,7 +274,7 @@
             <div class="highlight-grid">
                 <article class="highlight-card" data-reveal>
                     <h3>Placa Preta</h3>
-                    <p>Temos certificado placa preta.</p>
+                    <p>Temos certificado de placa preta.</p>
                 </article>
                 <article class="highlight-card" data-reveal>
                     <h3>Bom Atendimento</h3>
@@ -283,7 +282,7 @@
                 </article>
                 <article class="highlight-card" data-reveal>
                     <h3>Preço Justo</h3>
-                    <p>Entregamos o melhor preço pra você.</p>
+                    <p>Entregamos o melhor preço para você.</p>
                 </article>
                 <article class="highlight-card" data-reveal>
                     <h3>Bem Avaliado</h3>
@@ -292,7 +291,6 @@
             </div>
         </section>
         <!-- Seção de feedback dos clientes -->
-        <!-- Os feedbacks serão adicionados por via de feedbacks, deverá mostrar os ultimos 3 feedbacks -->
         <!-- Os feedbacks são exemplos estáticos criados para demonstração por meio de front-end -->
         <section id="feedback" class="feedback">
             <!-- Feedback dos clientes (Futuro) -->
@@ -356,12 +354,12 @@
             <div class="plans-grid" id="plans-grid">
                 <article class="plan-card" data-reveal>
                     <h3>Raridade Basic R$ 69,90</h3>
-                    <p>Você mesmo cria seu anuncio em nosso site e ele ficará exposto até vender.</p>
+                    <p>Você mesmo cria seu anúncio em nosso site e ele ficará exposto até vender.</p>
                     <ul>
                         <li>Veiculação por tempo indeterminado</li>
                         <li>21 fotos</li>
                         <li>1 Vídeo</li>
-                        <li>Por Veiculo</li>
+                        <li>Por veículo</li>
                     </ul>
                     <button type="button"
                         data-plan-whatsapp="Ol%C3%A1%2C%20quero%20assinar%20o%20plano%20Raridade%20Basic.%20Pode%20me%20orientar%3F">Quero
@@ -369,13 +367,13 @@
                 </article>
                 <article class="plan-card" data-reveal>
                     <h3>Raridade Premium R$ 109,90</h3>
-                    <p>Você mesmo cria seu anuncio em nosso site e ele ficará exposto até vender.</p>
+                    <p>Você mesmo cria seu anúncio em nosso site e ele ficará exposto até vender.</p>
                     <ul>
                         <li>Veiculação por tempo indeterminado</li>
                         <li>21 fotos</li>
                         <li>1 Vídeo</li>
-                        <li>Por Veiculo</li>
-                        <li>Seu anuncio será anunciado em no nossso instagram e facebook</li>
+                        <li>Por veículo</li>
+                        <li>Seu anúncio será divulgado no nosso Instagram e Facebook</li>
                     </ul>
                     <button type="button"
                         data-plan-whatsapp="Ol%C3%A1%2C%20tenho%20interesse%20no%20plano%20Raridade%20Premium%20com%20impulsiona%C3%A7%C3%A3o.%20Como%20funciona%3F">Quero
@@ -417,35 +415,35 @@
                 <h2>Sobre a Garage do Edu</h2>
                 <p>Especialista em carros antigos, conectando colecionadores de todo o interior paulista.</p>
             </div>
-            <div class="about-grid">
+            <div class="about-grid" id="about-grid">
                 <article class="about-card" data-reveal>
                     <h3>Atendimento colecionador</h3>
-                    <p>Eduardo Arcos acompanha pessoalmente cada negociação, garantindo processos transparentes.</p>
+                    <p>Eduardo Arcos irá acompanha-lo pessoalmente cada negociação.</p>
                 </article>
                 <article class="about-card" data-reveal>
                     <h3>Compra, venda e troca</h3>
-                    <p>Facilitamos trocas entre colecionadores e avaliamos condições para homologação de placa preta.
+                    <p>Aceitamos trocas entre colecionadores e avaliamos condições para homologação de placa preta.
                     </p>
                 </article>
                 <article class="about-card" data-reveal>
-                    <h3>Região de atuação</h3>
-                    <p>Retiradas presenciais em Salto/SP, com agendamento prévio e suporte à documentação.</p>
+                    <h3>Local</h3>
+                    <p>Retiradas presenciais em Salto/SP no local abaixo.</p>
                 </article>
             </div>
             <div class="maps">
                 <iframe
-                    src="https://www.google.com/maps/embed?pb=!3m2!1spt-BR!2sbr!4v1772056803747!5m2!1spt-BR!2sbr!6m8!1m7!1sE_GivrB5A_XwiqDQe8xAsA!2m2!1d-23.20816653358939!2d-47.26612812945819!3f102.5155594803864!4f6.210713402064201!5f0.7820865974627469"
+                    src="https://www.google.com/maps/embed?pb=!4v1773507351213!6m8!1m7!1sE_GivrB5A_XwiqDQe8xAsA!2m2!1d-23.20816655692189!2d-47.26612798036621!3f117.45575058858869!4f-0.5892885139437141!5f1.5370213448934833"
                     width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy"
                     referrerpolicy="no-referrer-when-downgrade"></iframe>
                 <iframe
-                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d916.7318219122658!2d-47.26803436875343!3d-23.20932036326105!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x94cf4e4147d94f29%3A0xc2c341990f16413d!2sR.%20Roque%20Lazzazera%2C%20Salto%20-%20SP%2C%2013323-341!5e0!3m2!1spt-BR!2sbr!4v1772056876546!5m2!1spt-BR!2sbr"
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3666.9604243424474!2d-47.26870462537216!3d-23.20811284870824!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x94cf4e6835dccd7f%3A0x473a95ca1bca691b!2sR.%20Roque%20Lazzazera%2C%20882%20-%20Jardim%20Santa%20Marta%2C%20Salto%20-%20SP%2C%2013323-410!5e0!3m2!1spt-BR!2sbr!4v1773509118169!5m2!1spt-BR!2sbr"
                     width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy"
                     referrerpolicy="no-referrer-when-downgrade"></iframe>
             </div>
             <div class="about-grid">
                 <article class="about-card" data-reveal>
                     <h3>Localização</h3>
-                    <p>Nossa loja está localizada na Rua Roque Lazzazera, Salto/SP, próximo ao centro comercial.</p>
+                    <p>Rua Roque Lazzazera, 882 - Jardim Santa Marta, Salto/SP</p>
                 </article>
             </div>
         </section>
@@ -453,12 +451,11 @@
         <section id="contato" class="cta-section">
             <div class="cta-content" data-reveal>
                 <h2>Pronto para negociar o seu clássico?</h2>
-                <p>Fale direto pelo WhatsApp, envie fotos do seu veículo para troca ou consulte disponibilidade
-                    imediata.</p>
+                <p>Fale direto pelo WhatsApp, envie fotos do seu veículo para troca ou consulte para mais informações.
+                </p>
                 <a class="cta whatsapp"
                     href="https://wa.me/5511963152153?text=Ol%C3%A1%2C%20gostaria%20de%20negociar%20meu%20cl%C3%A1ssico%20com%20a%20Garage%20do%20Edu."
-                    target="_blank" rel="noopener">Chamar no
-                    WhatsApp</a>
+                    target="_blank" rel="noopener">Falar com Eduardo</a>
             </div>
         </section>
     </main>
@@ -468,8 +465,8 @@
         <div class="car-modal__dialog" data-car-modal-dialog tabindex="-1">
             <button class="car-modal__close" type="button" data-car-close aria-label="Fechar detalhes">×</button>
             <div class="car-modal__media">
-                <img src="https://placehold.co/960x640?text=Imagem+indisponivel" alt="Imagem do veículo selecionado"
-                    data-car-modal-image loading="lazy">
+                <img src="https://placehold.co/960x640?text=Imagem+indispon%C3%ADvel"
+                    alt="Imagem do veículo selecionado" data-car-modal-image loading="lazy">
             </div>
             <div class="car-modal__content">
                 <div class="car-modal__header">
@@ -486,9 +483,38 @@
             </div>
         </div>
     </div>
+    <div class="account-panel" data-account-panel hidden aria-hidden="true">
+        <div class="account-panel__card" role="dialog" aria-modal="true" aria-labelledby="account-panel-title">
+            <button class="account-panel__close" type="button" data-account-panel-close
+                aria-label="Fechar painel">×</button>
+            <div class="account-panel__header">
+                <span class="account-panel__eyebrow">Minha conta</span>
+                <h2 id="account-panel-title">Bem-vindo, <span data-account-name>Usuario</span></h2>
+                <p class="account-panel__role">Perfil: <strong data-account-role>cliente</strong></p>
+            </div>
+            <div class="account-panel__details">
+                <div class="account-panel__item">
+                    <span>ID</span>
+                    <strong data-account-id>—</strong>
+                </div>
+                <div class="account-panel__item">
+                    <span>Email</span>
+                    <strong data-account-email>—</strong>
+                </div>
+                <div class="account-panel__item">
+                    <span>Senha</span>
+                    <a href="" class="account-panel__link">Alterar senha</a>
+                </div>
+            </div>
+            <div class="account-panel__actions">
+                <a class="cta ghost" href="Frontend/HTML/help.html#contato">Falar com suporte</a>
+                <button class="cta" type="button" data-account-panel-logout>Logout</button>
+            </div>
+        </div>
+    </div>
     <div class="cookie-consent" data-cookie-consent aria-live="polite" role="region" hidden>
-        <p>Usamos cookies para o funcionamento adequado do site,e para melhorar sua experiência, a desativação poderá
-            fazer com que a pagina não funcione corretamente. Ao continuar navegando, você concorda com nossa <a
+        <p>Usamos cookies para o funcionamento adequado do site, e para melhorar sua experiência, a desativação poderá
+            fazer com que a página não funcione corretamente. Ao continuar navegando, você concorda com nossa <a
                 href="Frontend/HTML/help.html#privacidade">Política de Privacidade</a>.</p>
         <div class="cookie-consent__actions">
             <button type="button" data-cookie-accept aria-label="Aceitar cookies">Aceitar</button>
@@ -519,9 +545,9 @@
             <!-- COLUNA 2: SOBRE A ESTAÇÃO RARIDADES -->
             <div class="footer-column">
                 <h3>SOBRE A GARAGE DO EDU</h3>
-                <p>A Garage do Edu reúne carros clássicos, com história e que carregam lembranças do Para-Choque ao
-                    Paralamas.</p>
-                <p>Os carros que sempre estiveram presentes na vida das famílias ao redor de Todo o Brasil e que trazem
+                <p>A Garage do Edu reúne carros clássicos, com história e que carregam lembranças do para-choque ao
+                    para-lama.</p>
+                <p>Os carros que sempre estiveram presentes na vida das famílias ao redor de todo o Brasil e que trazem
                     um sentimento nostálgico aos apaixonados por automóveis, estão agora reunidos em um só lugar!</p>
             </div>
 
@@ -534,7 +560,7 @@
                     <li><a href="Frontend/HTML/help.html#parceiros">&gt; Parceiros</a></li>
                     <li><a href="Frontend/HTML/help.html#parceiros">&gt; Publicidade</a></li>
                     <li><a href="Frontend/HTML/help.html#termos">&gt; Termos de Serviço</a></li>
-                    <li><a href="Frontend/HTML/help.html#privacidade">&gt; Política de privacidade</a></li>
+                    <li><a href="Frontend/HTML/help.html#privacidade">&gt; Política de Privacidade</a></li>
                 </ul>
             </div>
             <div class="copy">

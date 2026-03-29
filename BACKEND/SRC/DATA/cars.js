@@ -33,6 +33,17 @@ export default class CarDataAccess {
         return ({ info: `${result.length} available cars found.` , result });
     }
 
+    async getPendingCars() {
+        const result = await Mongo.db
+            .collection(collectionName)
+            .find({ status: 'pending' })
+            .toArray();
+
+        console.log('Get Request', result.length, 'pending cars found.');
+        console.log('statusCode = 200');
+        return ({ info: `${result.length} pending cars found.` , result });
+    }
+
     async getCarById(carId) {
         if (!ObjectId.isValid(carId)) {
             return null;

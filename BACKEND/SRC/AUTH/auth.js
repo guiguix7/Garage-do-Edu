@@ -1,11 +1,12 @@
 import express from 'express';
+import crypto from 'crypto';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { config } from 'dotenv';
 import rateLimit from 'express-rate-limit';
 import { z } from 'zod';
 import { Mongo } from '../DB/db.js';
-import { authenticateToken } from '../MIDDLEWARE/auth.js';
+import { authenticateToken, optionalAuthenticateToken } from '../MIDDLEWARE/auth.js';
 import { validateBody } from '../MIDDLEWARE/validate.js';
 import { writeAuditLog } from '../HELPERS/audit.js';
 
@@ -14,6 +15,7 @@ config(); // ensure JWT_SECRET is loaded before runtime checks
 const router = express.Router();
 const collectionName = 'users';
 const cookieName = process.env.AUTH_COOKIE_NAME || 'garage_session';
+const csrfCookieName = process.env.AUTH_CSRF_COOKIE_NAME || 'garage_csrf';
 
 const sanitizeUser = (user) => {
     if (!user) {
@@ -61,11 +63,37 @@ const getCookieOptions = () => {
     return options;
 };
 
+const getCsrfCookieOptions = () => ({
+    ...getCookieOptions(),
+    httpOnly: false
+});
+
+const generateCsrfToken = () => crypto.randomBytes(32).toString('hex');
+
 const sendAuthResponse = (res, statusCode, payload) => {
     if (payload?.token) {
+        const csrfToken = generateCsrfToken();
         res.cookie(cookieName, payload.token, getCookieOptions());
+        res.cookie(csrfCookieName, csrfToken, getCsrfCookieOptions());
+        const responsePayload = { ...payload, csrfToken };
+        return res.status(statusCode).json(responsePayload);
     }
     return res.status(statusCode).json(payload);
+};
+
+const requireCsrfToken = (req, res, next) => {
+    const csrfCookie = req.cookies?.[csrfCookieName];
+    const csrfHeader = req.get('x-csrf-token');
+
+    if (!csrfCookie || !csrfHeader || csrfCookie !== csrfHeader) {
+        return res.status(403).json({
+            success: false,
+            statuscode: 403,
+            message: 'Invalid CSRF token.'
+        });
+    }
+
+    return next();
 };
 
 if (!process.env.JWT_SECRET) {
@@ -73,8 +101,8 @@ if (!process.env.JWT_SECRET) {
 }
 
 const loginLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 8,
+    windowMs: 1 * 60 * 1000,
+    max: 10,
     standardHeaders: true,
     legacyHeaders: false,
     message: {
@@ -84,13 +112,25 @@ const loginLimiter = rateLimit({
     }
 });
 
+const registerLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000,
+    max: 3,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: {
+        success: false,
+        statuscode: 429,
+        message: 'Too many account creation attempts. Please try again later.'
+    }
+});
+
 const loginSchema = z.object({
     email: z.string().trim().min(3).email(),
     password: z.string().min(8)
 });
 
 const registerSchema = z.object({
-    username: z.string().trim().min(2).max(40),
+    username: z.string().trim().min(5).max(40),
     email: z.string().trim().min(3).email(),
     password: z.string().min(8)
 });
@@ -174,8 +214,8 @@ const handleRegister = async (req, res) => {
     }
 };
 
-router.post('/register', validateBody(registerSchema), handleRegister);
-router.post('/signup', validateBody(registerSchema), handleRegister);
+router.post('/register', registerLimiter, validateBody(registerSchema), handleRegister);
+router.post('/signup', registerLimiter, validateBody(registerSchema), handleRegister);
 
 // ROTA DE LOGIN
 router.post('/login', loginLimiter, validateBody(loginSchema), async (req, res) => {
@@ -235,11 +275,12 @@ const handleSession = (req, res) => {
 };
 
 router.get('/me', authenticateToken, handleSession);
-router.get('/session', authenticateToken, handleSession);
+router.get('/session', optionalAuthenticateToken, handleSession);
 
-router.post('/logout', (req, res) => {
+router.post('/logout', requireCsrfToken, (req, res) => {
     const cookieOptions = getCookieOptions();
     res.clearCookie(cookieName, { ...cookieOptions, maxAge: 0 });
+    res.clearCookie(csrfCookieName, { ...getCsrfCookieOptions(), maxAge: 0 });
     return res.status(200).json({
         success: true,
         statuscode: 200,

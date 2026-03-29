@@ -216,6 +216,18 @@ export default class CarsController {
         }
     }
 
+    async getPendingCars() {
+        try {
+            const cars = await this.carDataAccess.getPendingCars();
+
+            const normalized = normalizeCarsCollection(cars);
+            return OK({ ...normalized, info: normalized.info ?? "Pending cars only" });
+
+        } catch (error) {
+            return ServerError(error);
+        }
+    }
+
     async getCarById(carId) {
         try {
             const car = await this.carDataAccess.getCarById(carId);

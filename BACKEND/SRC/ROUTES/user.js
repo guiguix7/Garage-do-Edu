@@ -23,9 +23,12 @@ const userUpdateSchema = z
     })
     .strict();
 
-const maintenanceSchema = z.object({
-    enabled: z.boolean()
-});
+const maintenanceSchema = z
+    .object({
+        enabled: z.boolean(),
+        pages: z.array(z.string().trim().min(1)).optional()
+    })
+    .strict();
 
 userRouter.use(checkRole('admin'));
 
@@ -57,19 +60,36 @@ userRouter.get('/logs', async (req, res) => {
     });
 });
 
+userRouter.get('/maintenance', async (req, res) => {
+    const record = await Mongo.db.collection('system_settings').findOne({ key: 'maintenance' });
+    const enabled = Boolean(record?.enabled);
+    const pages = Array.isArray(record?.pages) ? record.pages : [];
+
+    res.json({
+        success: true,
+        statusCode: 200,
+        body: {
+            enabled,
+            pages,
+            updatedAt: record?.updatedAt || null
+        }
+    });
+});
+
 userRouter.post('/maintenance', validateBody(maintenanceSchema), async (req, res) => {
     const { enabled } = req.body;
+    const pages = Array.isArray(req.body.pages) ? [...new Set(req.body.pages)].filter(Boolean) : [];
 
     await Mongo.db.collection('system_settings').updateOne(
         { key: 'maintenance' },
-        { $set: { key: 'maintenance', enabled, updatedAt: new Date() } },
+        { $set: { key: 'maintenance', enabled, pages, updatedAt: new Date() } },
         { upsert: true }
     );
 
     res.json({
         success: true,
         statusCode: 200,
-        body: { enabled }
+        body: { enabled, pages }
     });
 
     void writeAuditLog({
@@ -77,7 +97,7 @@ userRouter.post('/maintenance', validateBody(maintenanceSchema), async (req, res
         actorId: req.user?.userId || null,
         actorRole: req.user?.role || null,
         targetId: 'maintenance',
-        meta: { enabled },
+        meta: { enabled, pages },
         req
     });
 });
