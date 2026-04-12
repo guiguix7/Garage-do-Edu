@@ -20,9 +20,61 @@ const SELECTORS = {
 	statusAuth: '[data-admin-status="auth"]',
 	statusMaintenance: '[data-admin-status="maintenance"]',
 	lastUpdate: '[data-admin-last-update]',
+	periodSelect: '[data-admin-period]',
+	alertsList: '[data-admin-alerts]',
+	tasksList: '[data-admin-tasks]',
 	carsTable: '[data-admin-cars]',
+	stockTable: '[data-admin-stock]',
 	usersTable: '[data-admin-users]',
 	partnersTable: '[data-admin-partners]',
+	adminsTable: '[data-admin-admins]',
+	leadsTable: '[data-admin-leads]',
+	leadsVisits: '[data-admin-leads-visits]',
+	leadsCount: '[data-admin-leads-count]',
+	leadsSales: '[data-admin-leads-sales]',
+	leadsSource: '[data-admin-leads-source]',
+	leadsStatus: '[data-admin-leads-status]',
+	leadsChannel: '[data-admin-leads-channel]',
+	leadsExport: '[data-admin-leads-export]',
+	financeRevenue: '[data-admin-finance-revenue]',
+	financeRevenueTrend: '[data-admin-finance-revenue-trend]',
+	financeCommissions: '[data-admin-finance-commissions]',
+	financeCommissionsCount: '[data-admin-finance-commissions-count]',
+	financeTable: '[data-admin-commissions]',
+	financeExport: '[data-admin-finance-export]',
+	pagesTable: '[data-admin-pages]',
+	pageForm: '[data-admin-page-form]',
+	pageTitle: '[data-admin-page-title]',
+	pageSlug: '[data-admin-page-slug]',
+	pageStatus: '[data-admin-page-status]',
+	pageContent: '[data-admin-page-content]',
+	mediaTable: '[data-admin-media]',
+	mediaForm: '[data-admin-media-form]',
+	mediaName: '[data-admin-media-name]',
+	mediaUrl: '[data-admin-media-url]',
+	mediaType: '[data-admin-media-type]',
+	mediaUsage: '[data-admin-media-usage]',
+	stockImport: '[data-admin-stock-import]',
+	reviewsTable: '[data-admin-reviews]',
+	chart: '[data-admin-chart]',
+	chartMetric: '[data-admin-chart-metric]',
+	reportsList: '[data-admin-reports]',
+	reportsRun: '[data-admin-reports-run]',
+	exportButtons: '[data-admin-export]',
+	notificationsList: '[data-admin-notifications]',
+	notificationsBadge: '[data-admin-notify-count]',
+	notificationsRead: '[data-admin-notifications-read]',
+	dbUsage: '[data-admin-db-usage]',
+	dbIndexes: '[data-admin-db-indexes]',
+	dbBackupDate: '[data-admin-db-backup-date]',
+	dbCollections: '[data-admin-db-collections]',
+	dbBackup: '[data-admin-db-backup]',
+	automations: '[data-admin-automation]',
+	security2fa: '[data-admin-security-2fa]',
+	securityRoles: '[data-admin-security-roles]',
+	securitySave: '[data-admin-security-save]',
+	supportOpen: '[data-admin-support-open]',
+	supportClosed: '[data-admin-support-closed]',
 	logsList: '[data-admin-logs]',
 	feedbackList: '[data-admin-feedback]',
 	maintenanceToggle: '[data-admin-maintenance]',
@@ -44,7 +96,15 @@ const DEFAULT_ENDPOINTS = {
 const adminState = {
 	closeSidebar: null,
 	endpoints: null,
-	adminUser: null
+	adminUser: null,
+	period: '30d',
+	currentChartMetric: 'visits',
+	leads: [],
+	commissions: [],
+	pages: [],
+	media: [],
+	reports: [],
+	notifications: []
 };
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -59,6 +119,18 @@ document.addEventListener('DOMContentLoaded', () => {
 			initProfileMenu();
 			initNavHighlighting();
 			initFilterGroups();
+			initPeriodFilter();
+			initLeadsFilters();
+			initPageForm();
+			initMediaForm();
+			initStockImport();
+			initChartFilters();
+			initExports();
+			initReportsControls();
+			initAutomationControls();
+			initSecurityControls();
+			initNotificationsControls();
+			initDbControls();
 			initThemeToggle();
 			bindLogout();
 			initRefreshButton();
@@ -278,6 +350,118 @@ async function handleAdminAction(actionName, id, value) {
 				body: JSON.stringify({ role: 'partner' })
 			});
 			loadDashboardData();
+			return;
+		}
+		if (actionName === 'lead-status') {
+			await fetchWithAuth(`${endpoints.user}/leads/${encodeURIComponent(id)}`, {
+				method: 'PATCH',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({ status: value })
+			});
+			loadLeads(endpoints);
+			return;
+		}
+		if (actionName === 'lead-delete') {
+			await fetchWithAuth(`${endpoints.user}/leads/${encodeURIComponent(id)}`, {
+				method: 'DELETE'
+			});
+			loadLeads(endpoints);
+			return;
+		}
+		if (actionName === 'commission-pay') {
+			await fetchWithAuth(`${endpoints.user}/finance/commissions/${encodeURIComponent(id)}`, {
+				method: 'PATCH',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({ status: 'paid' })
+			});
+			loadFinance(endpoints);
+			return;
+		}
+		if (actionName === 'review-reply') {
+			const responseText = window.prompt('Resposta ao cliente:');
+			if (!responseText) {
+				return;
+			}
+			await fetchWithAuth(`${endpoints.feedback}/${encodeURIComponent(id)}/respond`, {
+				method: 'PATCH',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({ response: responseText })
+			});
+			loadFeedback(endpoints);
+			return;
+		}
+		if (actionName === 'page-edit') {
+			const page = adminState.pages.find((item) => item.id === id || item._id === id);
+			const form = document.querySelector(SELECTORS.pageForm);
+			if (page && form) {
+				form.dataset.pageId = page.id || page._id || '';
+				setInputValue(SELECTORS.pageTitle, page.title);
+				setInputValue(SELECTORS.pageSlug, page.slug);
+				setInputValue(SELECTORS.pageStatus, page.status || 'draft');
+				setInputValue(SELECTORS.pageContent, page.content || '');
+				form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+			}
+			return;
+		}
+		if (actionName === 'page-delete') {
+			await fetchWithAuth(`${endpoints.user}/pages/${encodeURIComponent(id)}`, {
+				method: 'DELETE'
+			});
+			loadPages(endpoints);
+			return;
+		}
+		if (actionName === 'media-edit') {
+			const media = adminState.media.find((item) => item.id === id || item._id === id);
+			const form = document.querySelector(SELECTORS.mediaForm);
+			if (media && form) {
+				form.dataset.mediaId = media.id || media._id || '';
+				setInputValue(SELECTORS.mediaName, media.name);
+				setInputValue(SELECTORS.mediaUrl, media.url);
+				setInputValue(SELECTORS.mediaType, media.type || 'image');
+				setInputValue(SELECTORS.mediaUsage, media.usage || '');
+				form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+			}
+			return;
+		}
+		if (actionName === 'media-delete') {
+			await fetchWithAuth(`${endpoints.user}/media/${encodeURIComponent(id)}`, {
+				method: 'DELETE'
+			});
+			loadMedia(endpoints);
+			return;
+		}
+		if (actionName === 'report-run') {
+			await fetchWithAuth(`${endpoints.user}/reports/${encodeURIComponent(id)}/run`, {
+				method: 'POST'
+			});
+			loadReports(endpoints);
+			return;
+		}
+		if (actionName === 'task-open') {
+			if (value && value.startsWith('#')) {
+				const target = document.querySelector(value);
+				if (target) {
+					smoothScrollToSection(target);
+				}
+			}
+			return;
+		}
+		if (actionName === 'toggle-2fa') {
+			const nextValue = value === 'true' ? false : true;
+			await fetchWithAuth(`${endpoints.user}/${encodeURIComponent(id)}/2fa`, {
+				method: 'PATCH',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({ enabled: nextValue })
+			});
+			loadUsers(endpoints);
 			return;
 		}
 		if (actionName === 'toggle-user') {
@@ -554,6 +738,155 @@ function initFilterGroups() {
 	});
 }
 
+function initPeriodFilter() {
+	const select = document.querySelector(SELECTORS.periodSelect);
+	if (!select) {
+		return;
+	}
+	adminState.period = select.value || '30d';
+	select.addEventListener('change', () => {
+		adminState.period = select.value || '30d';
+		loadDashboardData();
+	});
+}
+
+function initLeadsFilters() {
+	const statusSelect = document.querySelector(SELECTORS.leadsStatus);
+	const channelSelect = document.querySelector(SELECTORS.leadsChannel);
+	if (!statusSelect && !channelSelect) {
+		return;
+	}
+	const handleChange = () => loadLeads(getEndpoints());
+	statusSelect?.addEventListener('change', handleChange);
+	channelSelect?.addEventListener('change', handleChange);
+}
+
+function initPageForm() {
+	const form = document.querySelector(SELECTORS.pageForm);
+	if (!form) {
+		return;
+	}
+	form.addEventListener('submit', async (event) => {
+		event.preventDefault();
+		await createPage();
+		form.reset();
+	});
+}
+
+function initMediaForm() {
+	const form = document.querySelector(SELECTORS.mediaForm);
+	if (!form) {
+		return;
+	}
+	form.addEventListener('submit', async (event) => {
+		event.preventDefault();
+		await createMedia();
+		form.reset();
+	});
+}
+
+function initStockImport() {
+	const button = document.querySelector(SELECTORS.stockImport);
+	if (!button) {
+		return;
+	}
+	const input = document.createElement('input');
+	input.type = 'file';
+	input.accept = '.csv';
+	input.hidden = true;
+	input.addEventListener('change', async () => {
+		const file = input.files?.[0];
+		if (!file) {
+			return;
+		}
+		const text = await file.text();
+		const rows = parseCsv(text);
+		if (rows.length) {
+			await importStock(rows);
+		}
+		input.value = '';
+	});
+	button.addEventListener('click', () => input.click());
+}
+
+function initChartFilters() {
+	const buttons = document.querySelectorAll(SELECTORS.chartMetric);
+	if (!buttons.length) {
+		return;
+	}
+	buttons.forEach((button) => {
+		button.addEventListener('click', () => {
+			adminState.currentChartMetric = button.dataset.adminChartMetric || 'visits';
+			buttons.forEach((item) => item.classList.toggle('is-active', item === button));
+			renderChart(adminState.chartData || [], adminState.currentChartMetric);
+		});
+	});
+}
+
+function initExports() {
+	const leadsExport = document.querySelector(SELECTORS.leadsExport);
+	const financeExport = document.querySelector(SELECTORS.financeExport);
+	const reportExports = document.querySelectorAll(SELECTORS.exportButtons);
+
+	if (leadsExport) {
+		leadsExport.addEventListener('click', () => downloadCsv('leads.csv', adminState.leads));
+	}
+	if (financeExport) {
+		financeExport.addEventListener('click', () => downloadCsv('comissoes.csv', adminState.commissions));
+	}
+	if (reportExports.length) {
+		reportExports.forEach((button) => {
+			button.addEventListener('click', () => downloadCsv('relatorios.csv', adminState.reports));
+		});
+	}
+}
+
+function initReportsControls() {
+	const button = document.querySelector(SELECTORS.reportsRun);
+	if (!button) {
+		return;
+	}
+	button.addEventListener('click', async () => {
+		const endpoints = getEndpoints();
+		await fetchWithAuth(`${endpoints.user}/reports/run-all`, { method: 'POST' });
+		loadReports(endpoints);
+	});
+}
+
+function initAutomationControls() {
+	const checkboxes = document.querySelectorAll(SELECTORS.automations);
+	if (!checkboxes.length) {
+		return;
+	}
+	checkboxes.forEach((checkbox) => {
+		checkbox.addEventListener('change', () => saveAutomations());
+	});
+}
+
+function initSecurityControls() {
+	const button = document.querySelector(SELECTORS.securitySave);
+	if (!button) {
+		return;
+	}
+	button.addEventListener('click', () => saveSecurityPolicy());
+}
+
+function initNotificationsControls() {
+	const button = document.querySelector(SELECTORS.notificationsRead);
+	if (!button) {
+		return;
+	}
+	button.addEventListener('click', () => markNotificationsRead());
+}
+
+function initDbControls() {
+	const button = document.querySelector(SELECTORS.dbBackup);
+	if (!button) {
+		return;
+	}
+	button.addEventListener('click', () => requestDatabaseBackup());
+}
+
 function initThemeToggle() {
 	const toggle = document.querySelector(SELECTORS.themeToggle);
 	if (!toggle) {
@@ -599,9 +932,23 @@ async function loadDashboardData() {
 	const tasks = await Promise.allSettled([
 		fetchHealth(endpoints),
 		loadStats(endpoints),
+		loadAlerts(endpoints),
+		loadTasks(endpoints),
 		loadFeedback(endpoints),
 		loadCars(endpoints),
+		loadStock(endpoints),
 		loadUsers(endpoints),
+		loadLeads(endpoints),
+		loadFinance(endpoints),
+		loadPages(endpoints),
+		loadMedia(endpoints),
+		loadReports(endpoints),
+		loadNotifications(endpoints),
+		loadSupport(endpoints),
+		loadDbStatus(endpoints),
+		loadAutomations(endpoints),
+		loadSecurityPolicy(endpoints),
+		loadChartData(endpoints),
 		loadLogs(endpoints),
 		loadMaintenance(endpoints)
 	]);
@@ -635,6 +982,183 @@ async function loadStats(endpoints) {
 	}
 }
 
+async function loadAlerts(endpoints) {
+	try {
+		const response = await fetchWithAuth(`${endpoints.user}/alerts?period=${encodeURIComponent(adminState.period)}`, {
+			method: 'GET'
+		});
+		const payload = await response.json();
+		renderAlerts(payload?.body?.items || []);
+	} catch (error) {
+		console.warn('Falha ao carregar alertas.', error);
+		renderAlerts([]);
+	}
+}
+
+async function loadTasks(endpoints) {
+	try {
+		const response = await fetchWithAuth(`${endpoints.user}/tasks`, { method: 'GET' });
+		const payload = await response.json();
+		renderTasks(payload?.body?.items || []);
+	} catch (error) {
+		console.warn('Falha ao carregar tarefas.', error);
+		renderTasks([]);
+	}
+}
+
+async function loadLeads(endpoints) {
+	try {
+		const status = document.querySelector(SELECTORS.leadsStatus)?.value || '';
+		const channel = document.querySelector(SELECTORS.leadsChannel)?.value || '';
+		const query = new URLSearchParams({
+			period: adminState.period,
+			status,
+			channel,
+			limit: '10'
+		});
+		const response = await fetchWithAuth(`${endpoints.user}/leads?${query.toString()}`, { method: 'GET' });
+		const payload = await response.json();
+		const body = payload?.body || {};
+		adminState.leads = Array.isArray(body.result) ? body.result : [];
+		setTextContent(SELECTORS.leadsVisits, formatNumber(body.visits));
+		setTextContent(SELECTORS.leadsCount, formatNumber(body.total));
+		setTextContent(SELECTORS.leadsSales, formatNumber(body.sales));
+		setTextContent(
+			SELECTORS.leadsSource,
+			body.primarySource ? `Origem principal: ${body.primarySource}` : 'Origem principal: --'
+		);
+		setTextById('monthly_leads', formatNumber(body.total));
+		renderLeadsTable(adminState.leads);
+	} catch (error) {
+		console.warn('Falha ao carregar leads.', error);
+		renderLeadsTable([]);
+	}
+}
+
+async function loadFinance(endpoints) {
+	try {
+		const response = await fetchWithAuth(`${endpoints.user}/finance?period=${encodeURIComponent(adminState.period)}`, {
+			method: 'GET'
+		});
+		const payload = await response.json();
+		const body = payload?.body || {};
+		adminState.commissions = Array.isArray(body.commissions) ? body.commissions : [];
+		setTextContent(SELECTORS.financeRevenue, formatCurrency(body.revenue || 0));
+		setTextContent(SELECTORS.financeRevenueTrend, body.revenueTrend || '--');
+		setTextContent(SELECTORS.financeCommissions, formatCurrency(body.commissionDue || 0));
+		setTextContent(SELECTORS.financeCommissionsCount, `${formatNumber(body.commissionsCount || 0)} pendentes`);
+		setTextById('estimated_revenue', formatCurrency(body.revenue || 0));
+		renderCommissionsTable(adminState.commissions);
+	} catch (error) {
+		console.warn('Falha ao carregar financeiro.', error);
+		renderCommissionsTable([]);
+	}
+}
+
+async function loadPages(endpoints) {
+	try {
+		const response = await fetchWithAuth(`${endpoints.user}/pages?limit=12`, { method: 'GET' });
+		const payload = await response.json();
+		adminState.pages = Array.isArray(payload?.body?.result) ? payload.body.result : [];
+		renderPagesTable(adminState.pages);
+	} catch (error) {
+		console.warn('Falha ao carregar paginas.', error);
+		renderPagesTable([]);
+	}
+}
+
+async function loadMedia(endpoints) {
+	try {
+		const response = await fetchWithAuth(`${endpoints.user}/media?limit=12`, { method: 'GET' });
+		const payload = await response.json();
+		adminState.media = Array.isArray(payload?.body?.result) ? payload.body.result : [];
+		renderMediaTable(adminState.media);
+	} catch (error) {
+		console.warn('Falha ao carregar midias.', error);
+		renderMediaTable([]);
+	}
+}
+
+async function loadReports(endpoints) {
+	try {
+		const response = await fetchWithAuth(`${endpoints.user}/reports`, { method: 'GET' });
+		const payload = await response.json();
+		adminState.reports = Array.isArray(payload?.body?.result) ? payload.body.result : [];
+		renderReports(adminState.reports);
+	} catch (error) {
+		console.warn('Falha ao carregar relatorios.', error);
+		renderReports([]);
+	}
+}
+
+async function loadNotifications(endpoints) {
+	try {
+		const response = await fetchWithAuth(`${endpoints.user}/notifications?limit=8`, { method: 'GET' });
+		const payload = await response.json();
+		adminState.notifications = Array.isArray(payload?.body?.result) ? payload.body.result : [];
+		renderNotifications(adminState.notifications);
+	} catch (error) {
+		console.warn('Falha ao carregar notificacoes.', error);
+		renderNotifications([]);
+	}
+}
+
+async function loadSupport(endpoints) {
+	try {
+		const response = await fetchWithAuth(`${endpoints.user}/support`, { method: 'GET' });
+		const payload = await response.json();
+		renderSupport(payload?.body || {});
+	} catch (error) {
+		console.warn('Falha ao carregar suporte.', error);
+		renderSupport({});
+	}
+}
+
+async function loadDbStatus(endpoints) {
+	try {
+		const response = await fetchWithAuth(`${endpoints.user}/db/status`, { method: 'GET' });
+		const payload = await response.json();
+		renderDbStatus(payload?.body || {});
+	} catch (error) {
+		console.warn('Falha ao carregar banco de dados.', error);
+		renderDbStatus({});
+	}
+}
+
+async function loadAutomations(endpoints) {
+	try {
+		const response = await fetchWithAuth(`${endpoints.user}/automations`, { method: 'GET' });
+		const payload = await response.json();
+		applyAutomationState(payload?.body || {});
+	} catch (error) {
+		console.warn('Falha ao carregar automacoes.', error);
+	}
+}
+
+async function loadSecurityPolicy(endpoints) {
+	try {
+		const response = await fetchWithAuth(`${endpoints.user}/security-policy`, { method: 'GET' });
+		const payload = await response.json();
+		applySecurityPolicy(payload?.body || {});
+	} catch (error) {
+		console.warn('Falha ao carregar politica de seguranca.', error);
+	}
+}
+
+async function loadChartData(endpoints) {
+	try {
+		const response = await fetchWithAuth(`${endpoints.user}/metrics?period=${encodeURIComponent(adminState.period)}`, {
+			method: 'GET'
+		});
+		const payload = await response.json();
+		adminState.chartData = Array.isArray(payload?.body?.series) ? payload.body.series : [];
+		renderChart(adminState.chartData, adminState.currentChartMetric);
+	} catch (error) {
+		console.warn('Falha ao carregar grafico.', error);
+		renderChart([], adminState.currentChartMetric);
+	}
+}
+
 async function loadFeedback(endpoints) {
 	try {
 		const response = await fetch(endpoints.feedback, { method: 'GET' });
@@ -645,8 +1169,11 @@ async function loadFeedback(endpoints) {
 		setTextById('total_reviews', `${formatNumber(feedback.total)} avaliações`);
 		setTextById('rating_stars', buildStars(average));
 		renderFeedbackList(feedback.result || []);
+		renderReviewsTable(feedback.result || []);
 	} catch (error) {
 		console.warn('Falha ao carregar feedback.', error);
+		renderFeedbackList([]);
+		renderReviewsTable([]);
 	}
 }
 
@@ -664,6 +1191,18 @@ async function loadCars(endpoints) {
 	} catch (error) {
 		console.warn('Falha ao carregar anuncios.', error);
 		renderCarsTable([]);
+	}
+}
+
+async function loadStock(endpoints) {
+	try {
+		const response = await fetchWithAuth(`${endpoints.user}/stock?limit=8`, { method: 'GET' });
+		const payload = await response.json();
+		const items = Array.isArray(payload?.body?.result) ? payload.body.result : [];
+		renderStockTable(items);
+	} catch (error) {
+		console.warn('Falha ao carregar estoque.', error);
+		renderStockTable([]);
 	}
 }
 
@@ -700,10 +1239,12 @@ async function loadUsers(endpoints) {
 		const users = Array.isArray(payload?.body?.result) ? payload.body.result : [];
 		renderUsersTable(users.filter((user) => user.role === 'client').slice(0, 6));
 		renderPartnersTable(users.filter((user) => user.role === 'partner').slice(0, 6));
+		renderAdminsTable(users.filter((user) => user.role === 'admin').slice(0, 6));
 	} catch (error) {
 		console.warn('Falha ao carregar usuarios.', error);
 		renderUsersTable([]);
 		renderPartnersTable([]);
+		renderAdminsTable([]);
 	}
 }
 
@@ -771,6 +1312,101 @@ function applyMaintenanceState(enabled, pages, updatedAt) {
 	}
 }
 
+async function createPage() {
+	const form = document.querySelector(SELECTORS.pageForm);
+	if (!form) {
+		return;
+	}
+	const payload = {
+		title: document.querySelector(SELECTORS.pageTitle)?.value?.trim() || '',
+		slug: document.querySelector(SELECTORS.pageSlug)?.value?.trim() || '',
+		status: document.querySelector(SELECTORS.pageStatus)?.value || 'draft',
+		content: document.querySelector(SELECTORS.pageContent)?.value?.trim() || ''
+	};
+	if (!payload.title || !payload.slug) {
+		return;
+	}
+	const endpoints = getEndpoints();
+	const pageId = form.dataset.pageId || '';
+	const url = pageId ? `${endpoints.user}/pages/${encodeURIComponent(pageId)}` : `${endpoints.user}/pages`;
+	const method = pageId ? 'PUT' : 'POST';
+	await fetchWithAuth(url, {
+		method,
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify(payload)
+	});
+	delete form.dataset.pageId;
+	await loadPages(endpoints);
+}
+
+async function createMedia() {
+	const form = document.querySelector(SELECTORS.mediaForm);
+	if (!form) {
+		return;
+	}
+	const payload = {
+		name: document.querySelector(SELECTORS.mediaName)?.value?.trim() || '',
+		url: document.querySelector(SELECTORS.mediaUrl)?.value?.trim() || '',
+		type: document.querySelector(SELECTORS.mediaType)?.value || 'image',
+		usage: document.querySelector(SELECTORS.mediaUsage)?.value?.trim() || ''
+	};
+	if (!payload.name || !payload.url) {
+		return;
+	}
+	const endpoints = getEndpoints();
+	const mediaId = form.dataset.mediaId || '';
+	const url = mediaId ? `${endpoints.user}/media/${encodeURIComponent(mediaId)}` : `${endpoints.user}/media`;
+	const method = mediaId ? 'PUT' : 'POST';
+	await fetchWithAuth(url, {
+		method,
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify(payload)
+	});
+	delete form.dataset.mediaId;
+	await loadMedia(endpoints);
+}
+
+async function saveAutomations() {
+	const checkboxes = Array.from(document.querySelectorAll(SELECTORS.automations));
+	if (!checkboxes.length) {
+		return;
+	}
+	const settings = {};
+	checkboxes.forEach((checkbox) => {
+		settings[checkbox.dataset.adminAutomation] = checkbox.checked;
+	});
+	const endpoints = getEndpoints();
+	await fetchWithAuth(`${endpoints.user}/automations`, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ settings })
+	});
+}
+
+async function saveSecurityPolicy() {
+	const enabled = document.querySelector(SELECTORS.security2fa)?.value || 'enabled';
+	const rolesSelect = document.querySelector(SELECTORS.securityRoles);
+	const roles = rolesSelect ? Array.from(rolesSelect.selectedOptions).map((option) => option.value) : [];
+	const endpoints = getEndpoints();
+	await fetchWithAuth(`${endpoints.user}/security-policy`, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ twoFactorRequired: enabled === 'enabled', roles })
+	});
+}
+
+async function markNotificationsRead() {
+	const endpoints = getEndpoints();
+	await fetchWithAuth(`${endpoints.user}/notifications/mark-read`, { method: 'PATCH' });
+	await loadNotifications(endpoints);
+}
+
+async function requestDatabaseBackup() {
+	const endpoints = getEndpoints();
+	await fetchWithAuth(`${endpoints.user}/db/backup`, { method: 'POST' });
+	await loadDbStatus(endpoints);
+}
+
 function getSelectedMaintenancePages() {
 	return Array.from(document.querySelectorAll(SELECTORS.maintenancePages))
 		.filter((checkbox) => checkbox.checked)
@@ -784,6 +1420,31 @@ function setSelectedMaintenancePages(pages) {
 	checkboxes.forEach((checkbox) => {
 		checkbox.checked = selected.has(checkbox.dataset.maintenancePage);
 	});
+}
+
+function applyAutomationState(payload) {
+	const checkboxes = document.querySelectorAll(SELECTORS.automations);
+	if (!checkboxes.length) {
+		return;
+	}
+	checkboxes.forEach((checkbox) => {
+		const key = checkbox.dataset.adminAutomation;
+		checkbox.checked = Boolean(payload?.settings?.[key]);
+	});
+}
+
+function applySecurityPolicy(payload) {
+	const select = document.querySelector(SELECTORS.security2fa);
+	const roles = document.querySelector(SELECTORS.securityRoles);
+	if (select) {
+		select.value = payload?.twoFactorRequired ? 'enabled' : 'disabled';
+	}
+	if (roles) {
+		const selected = new Set(Array.isArray(payload?.roles) ? payload.roles : []);
+		Array.from(roles.options).forEach((option) => {
+			option.selected = selected.has(option.value);
+		});
+	}
 }
 
 function renderCarsTable(cars) {
@@ -814,7 +1475,7 @@ function renderUsersTable(users) {
 	}
 	body.innerHTML = '';
 	if (!users.length) {
-		body.appendChild(createEmptyRow(4, 'Nenhum cliente encontrado.'));
+		body.appendChild(createEmptyRow(5, 'Nenhum cliente encontrado.'));
 		return;
 	}
 	users.forEach((user) => {
@@ -822,6 +1483,7 @@ function renderUsersTable(users) {
 		row.appendChild(createCell('Cliente', user.username || 'Sem nome'));
 		row.appendChild(createCell('E-mail', user.email || 'Nao informado'));
 		row.appendChild(createStatusCell('Status', user.isActive === false ? 'inactive' : 'active'));
+		row.appendChild(createCell('Tipo', 'Cliente'));
 		row.appendChild(createActionsCell(buildUserActions(user)));
 		body.appendChild(row);
 	});
@@ -843,6 +1505,27 @@ function renderPartnersTable(users) {
 		row.appendChild(createCell('E-mail', user.email || 'Nao informado'));
 		row.appendChild(createStatusCell('Status', user.isActive === false ? 'inactive' : 'active'));
 		row.appendChild(createActionsCell(buildUserActions(user)));
+		body.appendChild(row);
+	});
+}
+
+function renderAdminsTable(users) {
+	const body = document.querySelector(SELECTORS.adminsTable);
+	if (!body) {
+		return;
+	}
+	body.innerHTML = '';
+	if (!users.length) {
+		body.appendChild(createEmptyRow(5, 'Nenhum administrador encontrado.'));
+		return;
+	}
+	users.forEach((user) => {
+		const row = document.createElement('tr');
+		row.appendChild(createCell('Admin', user.username || 'Sem nome'));
+		row.appendChild(createCell('E-mail', user.email || 'Nao informado'));
+		row.appendChild(createStatusCell('2FA', user.twoFactorEnabled ? 'active' : 'inactive'));
+		row.appendChild(createStatusCell('Status', user.isActive === false ? 'inactive' : 'active'));
+		row.appendChild(createActionsCell(buildAdminActions(user)));
 		body.appendChild(row);
 	});
 }
@@ -904,6 +1587,387 @@ function renderFeedbackList(items) {
 	});
 }
 
+function renderReviewsTable(items) {
+	const body = document.querySelector(SELECTORS.reviewsTable);
+	if (!body) {
+		return;
+	}
+	body.innerHTML = '';
+	if (!items.length) {
+		body.appendChild(createEmptyRow(5, 'Nenhuma avaliação encontrada.'));
+		return;
+	}
+	items.slice(0, 6).forEach((item) => {
+		const row = document.createElement('tr');
+		row.appendChild(createCell('Cliente', item.userName || 'Cliente'));
+		row.appendChild(createCell('Nota', String(item.rating || 0)));
+		row.appendChild(createCell('Mensagem', item.message || 'Sem mensagem'));
+		row.appendChild(createStatusCell('Status', item.responded ? 'respondido' : 'pendente'));
+		row.appendChild(createActionsCell([createActionButton('Responder', 'review-reply', item.id || '')]));
+		body.appendChild(row);
+	});
+}
+
+function renderAlerts(items) {
+	const wrapper = document.querySelector(SELECTORS.alertsList);
+	if (!wrapper) {
+		return;
+	}
+	wrapper.innerHTML = '';
+	if (!items.length) {
+		const card = document.createElement('article');
+		card.className = 'admin-card admin-card--surface';
+		card.innerHTML = '<div class="admin-card__header"><span class="admin-card__label">Sem alertas críticos</span><span class="admin-card__badge admin-card__badge--neutral">0</span></div><p class="admin-card__meta">Tudo em ordem no momento.</p>';
+		wrapper.appendChild(card);
+		return;
+	}
+	items.forEach((item) => {
+		const card = document.createElement('article');
+		card.className = 'admin-card admin-card--surface';
+		const header = document.createElement('div');
+		header.className = 'admin-card__header';
+		const label = document.createElement('span');
+		label.className = 'admin-card__label';
+		label.textContent = item.title || 'Alerta';
+		const badge = document.createElement('span');
+		badge.className = 'admin-card__badge admin-card__badge--neutral';
+		badge.textContent = formatNumber(item.count || 0);
+		header.appendChild(label);
+		header.appendChild(badge);
+		const meta = document.createElement('p');
+		meta.className = 'admin-card__meta';
+		meta.textContent = item.description || '';
+		card.appendChild(header);
+		card.appendChild(meta);
+		wrapper.appendChild(card);
+	});
+}
+
+function renderTasks(items) {
+	const list = document.querySelector(SELECTORS.tasksList);
+	if (!list) {
+		return;
+	}
+	list.innerHTML = '';
+	if (!items.length) {
+		const empty = document.createElement('li');
+		empty.className = 'admin-empty';
+		empty.textContent = 'Nenhuma tarefa pendente.';
+		list.appendChild(empty);
+		return;
+	}
+	items.forEach((task) => {
+		const item = document.createElement('li');
+		const primary = document.createElement('div');
+		primary.className = 'admin-list__primary';
+		const title = document.createElement('strong');
+		title.textContent = task.title || 'Tarefa';
+		const meta = document.createElement('span');
+		meta.textContent = task.description || '';
+		primary.appendChild(title);
+		primary.appendChild(meta);
+		const secondary = document.createElement('div');
+		secondary.className = 'admin-list__secondary';
+		const button = createActionButton('Abrir', 'task-open', task.id || '', task.link || '');
+		button.classList.add('link-button');
+		secondary.appendChild(button);
+		item.appendChild(primary);
+		item.appendChild(secondary);
+		list.appendChild(item);
+	});
+}
+
+function renderLeadsTable(items) {
+	const body = document.querySelector(SELECTORS.leadsTable);
+	if (!body) {
+		return;
+	}
+	body.innerHTML = '';
+	if (!items.length) {
+		body.appendChild(createEmptyRow(5, 'Nenhum lead encontrado.'));
+		return;
+	}
+	items.forEach((lead) => {
+		const row = document.createElement('tr');
+		row.appendChild(createCell('Lead', lead.name || lead.contact || 'Sem nome'));
+		row.appendChild(createCell('Canal', lead.channel || 'Nao informado'));
+		row.appendChild(createCell('Interesse', lead.interest || 'Nao informado'));
+		row.appendChild(createStatusCell('Status', lead.status || 'novo'));
+		const actions = [
+			createActionButton('Contato', 'lead-status', lead.id || lead._id, 'contato'),
+			createActionButton('Qualificar', 'lead-status', lead.id || lead._id, 'qualificado'),
+			createActionButton('Perder', 'lead-status', lead.id || lead._id, 'perdido'),
+			createActionButton('Excluir', 'lead-delete', lead.id || lead._id)
+		];
+		row.appendChild(createActionsCell(actions));
+		body.appendChild(row);
+	});
+}
+
+function renderStockTable(items) {
+	const body = document.querySelector(SELECTORS.stockTable);
+	if (!body) {
+		return;
+	}
+	body.innerHTML = '';
+	if (!items.length) {
+		body.appendChild(createEmptyRow(5, 'Nenhum veiculo em estoque.'));
+		return;
+	}
+	items.forEach((item) => {
+		const row = document.createElement('tr');
+		row.appendChild(createCell('Veiculo', item.name || 'Sem nome'));
+		row.appendChild(createStatusCell('Status', item.status || 'disponivel'));
+		row.appendChild(createCell('KM', item.km ? `${formatNumber(item.km)} km` : '--'));
+		row.appendChild(createCell('Local', item.location || '--'));
+		row.appendChild(createCell('Preco sugerido', formatCurrency(item.suggestedPrice || 0)));
+		body.appendChild(row);
+	});
+}
+
+function renderCommissionsTable(items) {
+	const body = document.querySelector(SELECTORS.financeTable);
+	if (!body) {
+		return;
+	}
+	body.innerHTML = '';
+	if (!items.length) {
+		body.appendChild(createEmptyRow(5, 'Nenhuma comissao encontrada.'));
+		return;
+	}
+	items.forEach((item) => {
+		const row = document.createElement('tr');
+		row.appendChild(createCell('Parceiro', item.partner || 'Sem parceiro'));
+		row.appendChild(createCell('Valor', formatCurrency(item.amount || 0)));
+		row.appendChild(createStatusCell('Status', item.status || 'pending'));
+		row.appendChild(createCell('Vencimento', formatDate(item.dueDate)));
+		const actions = [createActionButton('Pagar', 'commission-pay', item.id || item._id)];
+		row.appendChild(createActionsCell(actions));
+		body.appendChild(row);
+	});
+}
+
+function renderPagesTable(items) {
+	const body = document.querySelector(SELECTORS.pagesTable);
+	if (!body) {
+		return;
+	}
+	body.innerHTML = '';
+	if (!items.length) {
+		body.appendChild(createEmptyRow(5, 'Nenhuma pagina encontrada.'));
+		return;
+	}
+	items.forEach((page) => {
+		const row = document.createElement('tr');
+		row.appendChild(createCell('Pagina', page.title || 'Sem titulo'));
+		row.appendChild(createCell('Slug', page.slug || '--'));
+		row.appendChild(createStatusCell('Status', page.status || 'draft'));
+		row.appendChild(createCell('Atualizado', formatDate(page.updatedAt || page.createdAt)));
+		const actions = [
+			createActionButton('Editar', 'page-edit', page.id || page._id),
+			createActionButton('Excluir', 'page-delete', page.id || page._id)
+		];
+		row.appendChild(createActionsCell(actions));
+		body.appendChild(row);
+	});
+}
+
+function renderMediaTable(items) {
+	const body = document.querySelector(SELECTORS.mediaTable);
+	if (!body) {
+		return;
+	}
+	body.innerHTML = '';
+	if (!items.length) {
+		body.appendChild(createEmptyRow(5, 'Nenhuma midia encontrada.'));
+		return;
+	}
+	items.forEach((item) => {
+		const row = document.createElement('tr');
+		row.appendChild(createCell('Arquivo', item.name || 'Sem nome'));
+		row.appendChild(createCell('Tipo', item.type || 'indefinido'));
+		row.appendChild(createCell('Uso', item.usage || '--'));
+		row.appendChild(createStatusCell('Status', item.status || 'active'));
+		const actions = [
+			createActionButton('Editar', 'media-edit', item.id || item._id),
+			createActionButton('Excluir', 'media-delete', item.id || item._id)
+		];
+		row.appendChild(createActionsCell(actions));
+		body.appendChild(row);
+	});
+}
+
+function renderReports(items) {
+	const list = document.querySelector(SELECTORS.reportsList);
+	if (!list) {
+		return;
+	}
+	list.innerHTML = '';
+	if (!items.length) {
+		const empty = document.createElement('li');
+		empty.className = 'admin-empty';
+		empty.textContent = 'Nenhum relatorio disponivel.';
+		list.appendChild(empty);
+		return;
+	}
+	items.forEach((report) => {
+		const item = document.createElement('li');
+		const primary = document.createElement('div');
+		primary.className = 'admin-list__primary';
+		const title = document.createElement('strong');
+		title.textContent = report.name || 'Relatorio';
+		const meta = document.createElement('span');
+		meta.textContent = report.description || 'Sem descricao';
+		primary.appendChild(title);
+		primary.appendChild(meta);
+		const secondary = document.createElement('div');
+		secondary.className = 'admin-list__secondary';
+		const button = createActionButton('Executar', 'report-run', report.id || report._id);
+		button.classList.add('link-button');
+		secondary.appendChild(button);
+		item.appendChild(primary);
+		item.appendChild(secondary);
+		list.appendChild(item);
+	});
+}
+
+function renderNotifications(items) {
+	const list = document.querySelector(SELECTORS.notificationsList);
+	const badge = document.querySelector(SELECTORS.notificationsBadge);
+	if (badge) {
+		const unread = items.filter((item) => !item.read).length;
+		badge.textContent = formatNumber(unread);
+	}
+	if (!list) {
+		return;
+	}
+	list.innerHTML = '';
+	if (!items.length) {
+		const empty = document.createElement('li');
+		empty.className = 'admin-empty';
+		empty.textContent = 'Nenhuma notificacao pendente.';
+		list.appendChild(empty);
+		return;
+	}
+	items.forEach((notice) => {
+		const item = document.createElement('li');
+		const primary = document.createElement('div');
+		primary.className = 'admin-list__primary';
+		const title = document.createElement('strong');
+		title.textContent = notice.title || 'Notificacao';
+		const meta = document.createElement('span');
+		meta.textContent = notice.message || '';
+		primary.appendChild(title);
+		primary.appendChild(meta);
+		const secondary = document.createElement('div');
+		secondary.className = 'admin-list__secondary';
+		const status = document.createElement('span');
+		status.className = `status-pill ${notice.read ? 'status-pill--neutral' : 'status-pill--warning'}`;
+		status.textContent = notice.read ? 'Lido' : 'Novo';
+		secondary.appendChild(status);
+		item.appendChild(primary);
+		item.appendChild(secondary);
+		list.appendChild(item);
+	});
+}
+
+function renderDbStatus(payload) {
+	setTextContent(SELECTORS.dbUsage, payload.storageUsage || '--');
+	setTextContent(SELECTORS.dbIndexes, payload.indexHealth || '--');
+	setTextContent(SELECTORS.dbBackupDate, payload.lastBackup || '--');
+	const body = document.querySelector(SELECTORS.dbCollections);
+	if (!body) {
+		return;
+	}
+	body.innerHTML = '';
+	const collections = Array.isArray(payload.collections) ? payload.collections : [];
+	if (!collections.length) {
+		body.appendChild(createEmptyRow(4, 'Nenhuma colecao encontrada.'));
+		return;
+	}
+	collections.forEach((collection) => {
+		const row = document.createElement('tr');
+		row.appendChild(createCell('Colecao', collection.name || '--'));
+		row.appendChild(createCell('Documentos', formatNumber(collection.count || 0)));
+		row.appendChild(createCell('Tamanho', collection.size || '--'));
+		row.appendChild(createCell('Atualizacao', formatDate(collection.updatedAt)));
+		body.appendChild(row);
+	});
+}
+
+function renderSupport(payload) {
+	const openList = document.querySelector(SELECTORS.supportOpen);
+	const closedList = document.querySelector(SELECTORS.supportClosed);
+	if (openList) {
+		openList.innerHTML = '';
+		const items = Array.isArray(payload.open) ? payload.open : [];
+		if (!items.length) {
+			const empty = document.createElement('li');
+			empty.className = 'admin-empty';
+			empty.textContent = 'Nenhuma pendencia interna.';
+			openList.appendChild(empty);
+		} else {
+			items.forEach((item) => {
+				const li = document.createElement('li');
+				const title = document.createElement('strong');
+				title.textContent = item.title || 'Tarefa';
+				const meta = document.createElement('span');
+				meta.textContent = item.description || '';
+				li.appendChild(title);
+				li.appendChild(meta);
+				openList.appendChild(li);
+			});
+		}
+	}
+	if (closedList) {
+		closedList.innerHTML = '';
+		const items = Array.isArray(payload.closed) ? payload.closed : [];
+		if (!items.length) {
+			const empty = document.createElement('li');
+			empty.className = 'admin-empty';
+			empty.textContent = 'Nenhum item resolvido.';
+			closedList.appendChild(empty);
+		} else {
+			items.forEach((item) => {
+				const li = document.createElement('li');
+				const title = document.createElement('strong');
+				title.textContent = item.title || 'Resolvido';
+				const meta = document.createElement('span');
+				meta.textContent = item.description || '';
+				li.appendChild(title);
+				li.appendChild(meta);
+				closedList.appendChild(li);
+			});
+		}
+	}
+}
+
+function renderChart(series, metric) {
+	const container = document.querySelector(SELECTORS.chart);
+	if (!container) {
+		return;
+	}
+	container.innerHTML = '';
+	if (!series.length) {
+		const empty = document.createElement('div');
+		empty.className = 'admin-chart__empty';
+		empty.textContent = 'Sem dados para o periodo selecionado.';
+		container.appendChild(empty);
+		return;
+	}
+	const maxValue = Math.max(1, ...series.map((item) => Number(item[metric] || 0)));
+	series.forEach((item) => {
+		const bar = document.createElement('div');
+		bar.className = 'admin-chart__bar';
+		const value = Number(item[metric] || 0);
+		bar.style.height = `${Math.round((value / maxValue) * 100)}%`;
+		const label = document.createElement('span');
+		label.textContent = item.label || '--';
+		bar.appendChild(label);
+		container.appendChild(bar);
+	});
+}
+
 function buildCarActions(car) {
 	const actions = [];
 	if (car.status === 'pending') {
@@ -922,6 +1986,14 @@ function buildUserActions(user) {
 		const active = user.isActive !== false;
 		actions.push(createActionButton(active ? 'Desativar' : 'Ativar', 'toggle-user', user._id || user.id, String(active)));
 	}
+	return actions;
+}
+
+function buildAdminActions(user) {
+	const actions = [];
+	const active = user.isActive !== false;
+	actions.push(createActionButton(active ? 'Desativar' : 'Ativar', 'toggle-user', user._id || user.id, String(active)));
+	actions.push(createActionButton(user.twoFactorEnabled ? 'Desativar 2FA' : 'Ativar 2FA', 'toggle-2fa', user._id || user.id, String(user.twoFactorEnabled)));
 	return actions;
 }
 
@@ -982,7 +2054,28 @@ function resolveStatusClass(status) {
 	if (status === 'pending') {
 		return 'status-pill--warning';
 	}
+	if (status === 'qualificado' || status === 'paid' || status === 'published') {
+		return 'status-pill--success';
+	}
+	if (status === 'novo' || status === 'contato' || status === 'draft' || status === 'pendente') {
+		return 'status-pill--warning';
+	}
 	if (status === 'inactive') {
+		return 'status-pill--neutral';
+	}
+	if (status === 'disponivel') {
+		return 'status-pill--success';
+	}
+	if (status === 'reservado' || status === 'avaliacao') {
+		return 'status-pill--warning';
+	}
+	if (status === 'vendido') {
+		return 'status-pill--neutral';
+	}
+	if (status === 'respondido') {
+		return 'status-pill--success';
+	}
+	if (status === 'perdido') {
 		return 'status-pill--neutral';
 	}
 	return 'status-pill--neutral';
@@ -998,6 +2091,45 @@ function formatStatusLabel(status) {
 	if (status === 'inactive') {
 		return 'Inativo';
 	}
+	if (status === 'qualificado') {
+		return 'Qualificado';
+	}
+	if (status === 'contato') {
+		return 'Em contato';
+	}
+	if (status === 'novo') {
+		return 'Novo';
+	}
+	if (status === 'perdido') {
+		return 'Perdido';
+	}
+	if (status === 'respondido') {
+		return 'Respondido';
+	}
+	if (status === 'pendente') {
+		return 'Pendente';
+	}
+	if (status === 'paid') {
+		return 'Pago';
+	}
+	if (status === 'draft') {
+		return 'Rascunho';
+	}
+	if (status === 'published') {
+		return 'Publicado';
+	}
+	if (status === 'disponivel') {
+		return 'Disponivel';
+	}
+	if (status === 'reservado') {
+		return 'Reservado';
+	}
+	if (status === 'vendido') {
+		return 'Vendido';
+	}
+	if (status === 'avaliacao') {
+		return 'Em avaliacao';
+	}
 	return 'Indefinido';
 }
 
@@ -1008,9 +2140,31 @@ function setTextById(id, value) {
 	}
 }
 
+function setTextContent(selector, value) {
+	const element = document.querySelector(selector);
+	if (element) {
+		element.textContent = value || '--';
+	}
+}
+
+function setInputValue(selector, value) {
+	const element = document.querySelector(selector);
+	if (element) {
+		element.value = value ?? '';
+	}
+}
+
 function formatNumber(value) {
 	const safe = Number(value || 0);
 	return new Intl.NumberFormat('pt-BR').format(safe);
+}
+
+function formatCurrency(value) {
+	const safe = Number(value || 0);
+	return new Intl.NumberFormat('pt-BR', {
+		style: 'currency',
+		currency: 'BRL'
+	}).format(safe);
 }
 
 function formatDate(dateValue) {
@@ -1051,6 +2205,47 @@ function formatLogMeta(log) {
 function buildStars(value) {
 	const numeric = Math.max(0, Math.min(5, Math.round(Number(value) || 0)));
 	return `${'★'.repeat(numeric)}${'☆'.repeat(5 - numeric)}`;
+}
+
+function downloadCsv(filename, items) {
+	if (!Array.isArray(items) || !items.length) {
+		return;
+	}
+	const headers = Object.keys(items[0] || {});
+	const rows = items.map((item) => headers.map((key) => String(item[key] ?? '')).join(','));
+	const csv = [headers.join(','), ...rows].join('\n');
+	const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+	const url = URL.createObjectURL(blob);
+	const link = document.createElement('a');
+	link.href = url;
+	link.download = filename;
+	link.click();
+	URL.revokeObjectURL(url);
+}
+
+function parseCsv(text) {
+	const lines = text.split(/\r?\n/).filter(Boolean);
+	if (lines.length < 2) {
+		return [];
+	}
+	const headers = lines[0].split(',').map((value) => value.trim().toLowerCase());
+	return lines.slice(1).map((line) => {
+		const values = line.split(',').map((value) => value.trim());
+		return headers.reduce((acc, key, index) => {
+			acc[key] = values[index] || '';
+			return acc;
+		}, {});
+	});
+}
+
+async function importStock(rows) {
+	const endpoints = getEndpoints();
+	await fetchWithAuth(`${endpoints.user}/stock/import`, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ rows })
+	});
+	await loadStock(endpoints);
 }
 
 function setStatusBadge(selector, type, label) {

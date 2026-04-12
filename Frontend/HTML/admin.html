@@ -34,11 +34,16 @@
                     <span class="admin-toggle__bar"></span>
                     <span class="admin-toggle__bar"></span>
                 </button>
+                <div class="admin-quick-actions" aria-label="Atalhos rápidos">
+                    <a class="admin-pill" href="ad_create.html">Novo anúncio</a>
+                </div>
+                <button class="admin-notifications" type="button" aria-label="Notificações">
+                    Notificações
+                    <span class="admin-badge admin-badge--warning" data-admin-notify-count>--</span>
+                </button>
                 <div class="admin-session">
                     <span class="admin-session__greeting">Bem-vindo</span>
-                    <!-- Alterar para 'Bom Dia', 'Boa Tarde' ou 'Boa Noite', de acordo com o horário -->
                     <strong id="admin-name" class="admin-session__name">Usuário</strong>
-                    <!-- Substituir por nome do usuário logado -->
                 </div>
                 <button class="admin-refresh" type="button" data-admin-refresh>Atualizar dados</button>
                 <nav class="admin-quick-links" aria-label="Atalhos do painel">
@@ -50,32 +55,27 @@
                     <button class="admin-profile__trigger" type="button" aria-haspopup="true" aria-expanded="false">
                         <img src="../SRC/ASSETS/IMG/garage do edu logo.jpg" alt="Avatar administrador">
                     </button>
-                    <!-- Menu de opções do perfil (Finalizar, Estilizar, Automatizar) -->
                     <ul class="admin-profile__menu" role="menu">
                         <li class="submenu-item" role="none" data-account-item data-account-visible="authenticated">
                             <a role="menuitem" href="#" data-auth-required="authenticated">Minha Conta</a>
                         </li>
-                        <!-- Partner's Account Only -->
                         <li class="submenu-item" role="none" data-account-item data-account-visible="authenticated"
                             data-account-role="partner">
                             <a role="menuitem" href="ad_create.html" data-auth-required="authenticated"
                                 data-auth-roles="partner" data-auth-fallback="login.html">Meus
                                 Anúncios</a>
                         </li>
-                        <!-- Admin's Account Only -->
                         <li class="submenu-item" role="none" data-account-item data-account-visible="authenticated"
                             data-account-role="admin">
                             <a role="menuitem" href="admin.html" data-auth-required="authenticated"
                                 data-auth-roles="admin">Painel
                                 Administrativo</a>
                         </li>
-                        <!-- Always visible -->
                         <li class="submenu-item submenu-configs" role="none" data-account-item>
                             <a href="#configuracoes" role="menuitem">Configurações</a>
                         </li>
                         <li class="submenu-item submenu-theme" role="none" data-account-item>
                             <span class="submenu-label" id="theme-toggle-label">Tema</span>
-                            <!-- Tema Claro/Escuro (futuro)-->
                             <label class="on-off" for="theme-toggle">
                                 <input id="theme-toggle" type="checkbox" aria-labelledby="theme-toggle-label"
                                     data-admin-theme-toggle>
@@ -96,8 +96,12 @@
                     <ul>
                         <li><a class="is-active" href="#dashboard">Dashboard</a></li>
                         <li><a href="#anuncios">Anúncios</a></li>
+                        <li><a href="#estoque">Estoque / Veículos</a></li>
                         <li><a href="#clientes">Clientes</a></li>
                         <li><a href="#parceiros">Parceiros</a></li>
+                        <li><a href="#administradores">Administradores</a></li>
+                        <li><a href="#leads">Leads e funil</a></li>
+                        <li><a href="#notificacoes">Notificações</a></li>
                     </ul>
                 </nav>
             </div>
@@ -105,8 +109,12 @@
                 <h2 class="admin-sidebar__title">Gestão</h2>
                 <nav>
                     <ul>
+                        <li><a href="#conteudo">Conteúdo do site</a></li>
+                        <li><a href="#midias">Mídias</a></li>
+                        <li><a href="#avaliacoes">Avaliações</a></li>
+                        <li><a href="#relatorios">Relatórios</a></li>
                         <li><a href="#logs">Logs</a></li>
-                        <li><a href="#estatisticas">Estatísticas</a></li>
+                        <li><a href="#banco-dados">Banco de dados</a></li>
                         <li><a href="#configuracoes">Configurações</a></li>
                         <li><a href="#suporte">Suporte</a></li>
                     </ul>
@@ -118,6 +126,17 @@
                 <div>
                     <h2>Dashboard</h2>
                     <p>Informações em tempo real das principais métricas do negócio.</p>
+                </div>
+                <div class="admin-content__filters" aria-label="Filtros do dashboard">
+                    <label class="admin-content__filter">
+                        <span>Período</span>
+                        <select name="period" data-admin-period>
+                            <option value="7d">Últimos 7 dias</option>
+                            <option value="30d" selected>Últimos 30 dias</option>
+                            <option value="90d">Últimos 90 dias</option>
+                            <option value="365d">Últimos 12 meses</option>
+                        </select>
+                    </label>
                 </div>
             </header>
             <section class="admin-status" aria-label="Status do sistema">
@@ -137,6 +156,15 @@
                     <span class="admin-status__label">Última atualização</span>
                     <span class="admin-status__value" data-admin-last-update>--</span>
                 </div>
+            </section>
+            <section class="admin-alerts" aria-label="Alertas prioritários" data-admin-alerts>
+                <article class="admin-card admin-card--surface">
+                    <div class="admin-card__header">
+                        <span class="admin-card__label">Carregando alertas</span>
+                        <span class="admin-card__badge admin-card__badge--neutral">--</span>
+                    </div>
+                    <p class="admin-card__meta">Aguardando dados do sistema.</p>
+                </article>
             </section>
             <div class="admin-kpis">
                 <article class="admin-card admin-card--primary">
@@ -184,7 +212,35 @@
                     <strong class="admin-card__value" id="rating_stars">★★★★★</strong>
                     <p class="admin-card__meta" id="total_reviews">000 avaliações</p>
                 </article>
+                <article class="admin-card admin-card--surface">
+                    <div class="admin-card__header">
+                        <span class="admin-card__label">Leads do mês</span>
+                    </div>
+                    <strong class="admin-card__value" id="monthly_leads">000</strong>
+                    <p class="admin-card__meta" data-admin-leads-source>Origem principal: --</p>
+                </article>
+                <article class="admin-card admin-card--surface">
+                    <div class="admin-card__header">
+                        <span class="admin-card__label">Total em Anúncios</span>
+                    </div>
+                    <strong class="admin-card__value" id="estimated_revenue">R$ 0</strong>
+                </article>
             </div>
+            <section class="admin-panel admin-panel--surface" id="tarefas">
+                <header class="admin-panel__header">
+                    <div>
+                        <h3>Tarefas rápidas</h3>
+                        <p>Atalhos para revisões e aprovações críticas.</p>
+                    </div>
+                    <div class="admin-panel__filters">
+                        <button type="button" class="link-button is-active">Prioritárias</button>
+                        <button type="button" class="link-button">Operação</button>
+                    </div>
+                </header>
+                <ul class="admin-list" data-admin-tasks>
+                    <li class="admin-empty">Carregando tarefas...</li>
+                </ul>
+            </section>
 
             <section class="admin-panels">
                 <article class="admin-panel" id="anuncios">
@@ -215,6 +271,34 @@
                         </table>
                     </div>
                 </article>
+                <article class="admin-panel" id="estoque">
+                    <header class="admin-panel__header">
+                        <div>
+                            <h3>Estoque / Veículos</h3>
+                            <p>Controle de disponibilidade, laudos e precificação sugerida.</p>
+                        </div>
+                        <button class="admin-panel__action" type="button" data-admin-stock-import>Importar
+                            planilha</button>
+                    </header>
+                    <div class="admin-table-wrapper">
+                        <table class="admin-table" aria-label="Tabela de estoque">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Veículo</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col">KM</th>
+                                    <th scope="col">Local</th>
+                                    <th scope="col">Preço sugerido</th>
+                                </tr>
+                            </thead>
+                            <tbody data-admin-stock>
+                                <tr class="admin-empty">
+                                    <td colspan="5">Estoque em atualização...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </article>
                 <article class="admin-panel" id="clientes">
                     <header class="admin-panel__header">
                         <div>
@@ -230,12 +314,13 @@
                                     <th scope="col">Cliente</th>
                                     <th scope="col">E-mail</th>
                                     <th scope="col">Status</th>
+                                    <th scope="col">Tipo</th>
                                     <th scope="col">Ações</th>
                                 </tr>
                             </thead>
                             <tbody data-admin-users>
                                 <tr class="admin-empty">
-                                    <td colspan="4">Carregando usuários...</td>
+                                    <td colspan="5">Carregando usuários...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -268,6 +353,142 @@
                         </table>
                     </div>
                 </article>
+                <article class="admin-panel" id="administradores">
+                    <header class="admin-panel__header">
+                        <div>
+                            <h3>Administradores</h3>
+                            <p>Perfis sensíveis com permissões avançadas e 2FA.</p>
+                        </div>
+                        <button class="admin-panel__action" type="button" data-admin-refresh>Atualizar admins</button>
+                    </header>
+                    <div class="admin-table-wrapper">
+                        <table class="admin-table" aria-label="Tabela de administradores">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Admin</th>
+                                    <th scope="col">E-mail</th>
+                                    <th scope="col">2FA</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody data-admin-admins>
+                                <tr class="admin-empty">
+                                    <td colspan="5">Carregando administradores...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </article>
+                <article class="admin-panel" id="leads">
+                    <header class="admin-panel__header">
+                        <div>
+                            <h3>Leads e funil</h3>
+                            <p>Visitas, contatos e conversões por canal.</p>
+                        </div>
+                        <button class="admin-panel__action" type="button" data-admin-refresh>Atualizar funil</button>
+                    </header>
+                    <div class="admin-status">
+                        <div class="admin-status__card">
+                            <span class="admin-status__label">Visitas</span>
+                            <span class="admin-status__value" data-admin-leads-visits>--</span>
+                        </div>
+                        <div class="admin-status__card">
+                            <span class="admin-status__label">Leads</span>
+                            <span class="admin-status__value" data-admin-leads-count>--</span>
+                        </div>
+                        <div class="admin-status__card">
+                            <span class="admin-status__label">Vendas</span>
+                            <span class="admin-status__value" data-admin-leads-sales>--</span>
+                        </div>
+                    </div>
+                    <div class="admin-toolbar">
+                        <div class="admin-filters">
+                            <span class="admin-filter-label">Filtros</span>
+                            <label class="admin-filter">
+                                <span>Status</span>
+                                <select data-admin-leads-status>
+                                    <option value="">Todos</option>
+                                    <option value="novo">Novo</option>
+                                    <option value="contato">Em contato</option>
+                                    <option value="qualificado">Qualificado</option>
+                                    <option value="perdido">Perdido</option>
+                                </select>
+                            </label>
+                            <label class="admin-filter">
+                                <span>Canal</span>
+                                <select data-admin-leads-channel>
+                                    <option value="">Todos</option>
+                                    <option value="whatsapp">WhatsApp</option>
+                                    <option value="instagram">Instagram</option>
+                                    <option value="site">Site</option>
+                                    <option value="indicacao">Indicação</option>
+                                </select>
+                            </label>
+                        </div>
+                        <div class="admin-bulk-actions">
+                            <button class="link-button" type="button" data-admin-leads-export>Exportar</button>
+                        </div>
+                    </div>
+                    <div class="admin-table-wrapper">
+                        <table class="admin-table" aria-label="Tabela de leads recentes">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Lead</th>
+                                    <th scope="col">Canal</th>
+                                    <th scope="col">Interesse</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody data-admin-leads>
+                                <tr class="admin-empty">
+                                    <td colspan="5">Carregando leads...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </article>
+                <article class="admin-panel" id="notificacoes">
+                    <header class="admin-panel__header">
+                        <div>
+                            <h3>Notificações internas</h3>
+                            <p>Alertas operacionais e tarefas pendentes.</p>
+                        </div>
+                        <button class="admin-panel__action" type="button" data-admin-notifications-read>Marcar como
+                            lidas</button>
+                    </header>
+                    <ul class="admin-list" data-admin-notifications>
+                        <li class="admin-empty">Carregando notificações...</li>
+                    </ul>
+                </article>
+                <article class="admin-panel" id="avaliacoes">
+                    <header class="admin-panel__header">
+                        <div>
+                            <h3>Avaliações e feedbacks</h3>
+                            <p>Notas recentes e ações de resposta.</p>
+                        </div>
+                        <button class="admin-panel__action" type="button" data-admin-refresh>Atualizar</button>
+                    </header>
+                    <div class="admin-table-wrapper">
+                        <table class="admin-table" aria-label="Tabela de avaliações">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Cliente</th>
+                                    <th scope="col">Nota</th>
+                                    <th scope="col">Mensagem</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody data-admin-reviews>
+                                <tr class="admin-empty">
+                                    <td colspan="5">Carregando avaliações...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </article>
                 <article class="admin-panel" id="estatisticas">
                     <header class="admin-panel__header">
                         <div>
@@ -275,31 +496,37 @@
                             <p>Grafico de estatísticas mensais.</p>
                         </div>
                         <div class="admin-panel__filters">
-                            <button type="button" class="link-button is-active">Visitas</button>
-                            <button type="button" class="link-button">Vendas</button>
-                            <button type="button" class="link-button">Avaliações</button>
+                            <button type="button" class="link-button is-active"
+                                data-admin-chart-metric="visits">Visitas</button>
+                            <button type="button" class="link-button" data-admin-chart-metric="sales">Vendas</button>
+                            <button type="button" class="link-button"
+                                data-admin-chart-metric="ratings">Avaliações</button>
                         </div>
                     </header>
-                    <div class="admin-chart" role="img" aria-label="Gráfico de barras ilustrativo">
-                        <div class="admin-chart__bar admin-chart__bar--active" style="height: 82%">
-                            <span>Jan</span>
+                    <div class="admin-chart" role="img" aria-label="Gráfico de desempenho" data-admin-chart>
+                        <div class="admin-chart__empty">Carregando gráfico...</div>
+                    </div>
+                </article>
+                <article class="admin-panel" id="relatorios">
+                    <header class="admin-panel__header">
+                        <div>
+                            <h3>Relatórios e estatísticas</h3>
+                            <p>Funil, desempenho por parceiro e campanhas.</p>
                         </div>
-                        <div class="admin-chart__bar" style="height: 64%">
-                            <span>Fev</span>
-                        </div>
-                        <div class="admin-chart__bar" style="height: 74%">
-                            <span>Mar</span>
-                        </div>
-                        <div class="admin-chart__bar" style="height: 92%">
-                            <span>Abr</span>
-                        </div>
-                        <div class="admin-chart__bar" style="height: 68%">
-                            <span>Mai</span>
-                        </div>
-                        <div class="admin-chart__bar" style="height: 88%">
-                            <span>Jun</span>
+                        <button class="admin-panel__action" type="button" data-admin-reports-run>Gerar
+                            relatório</button>
+                    </header>
+                    <div class="admin-toolbar">
+                        <div class="admin-filters">
+                            <span class="admin-filter-label">Exportar</span>
+                            <button class="link-button" type="button" data-admin-export="csv">CSV</button>
+                            <button class="link-button" type="button" data-admin-export="xlsx">Excel</button>
+                            <button class="link-button" type="button" data-admin-export="pdf">PDF</button>
                         </div>
                     </div>
+                    <ul class="admin-list" data-admin-reports>
+                        <li class="admin-empty">Carregando relatórios...</li>
+                    </ul>
                 </article>
                 <article class="admin-panel admin-panel--surface" id="configuracoes">
                     <header class="admin-panel__header">
@@ -344,10 +571,12 @@
                                     <label><input type="checkbox" data-maintenance-page="login"> Login</label>
                                 </li>
                                 <li>
-                                    <label><input type="checkbox" data-maintenance-page="politica-privacidade"> Política de Privacidade</label>
+                                    <label><input type="checkbox" data-maintenance-page="politica-privacidade"> Política
+                                        de Privacidade</label>
                                 </li>
                             </ul>
-                            <span class="admin-card__meta">As páginas selecionadas ficarão indisponíveis para visitantes.</span>
+                            <span class="admin-card__meta">As páginas selecionadas ficarão indisponíveis para
+                                visitantes.</span>
                         </div>
                         <div class="admin-setting">
                             <div>
@@ -356,6 +585,46 @@
                             </div>
                             <span class="admin-card__meta">Sincronização com API</span>
                         </div>
+                    </div>
+                </article>
+                <article class="admin-panel admin-panel--surface" id="banco-dados">
+                    <header class="admin-panel__header">
+                        <div>
+                            <h3>Banco de dados</h3>
+                            <p>Status de armazenamento, backups e performance.</p>
+                        </div>
+                        <button class="admin-panel__action" type="button" data-admin-db-backup>Gerar backup</button>
+                    </header>
+                    <div class="admin-status">
+                        <div class="admin-status__card">
+                            <span class="admin-status__label">Armazenamento</span>
+                            <span class="admin-status__value" data-admin-db-usage>--</span>
+                        </div>
+                        <div class="admin-status__card">
+                            <span class="admin-status__label">Índices</span>
+                            <span class="admin-status__value" data-admin-db-indexes>--</span>
+                        </div>
+                        <div class="admin-status__card">
+                            <span class="admin-status__label">Último backup</span>
+                            <span class="admin-status__value" data-admin-db-backup-date>--</span>
+                        </div>
+                    </div>
+                    <div class="admin-table-wrapper">
+                        <table class="admin-table" aria-label="Tabela de coleções">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Coleção</th>
+                                    <th scope="col">Documentos</th>
+                                    <th scope="col">Tamanho</th>
+                                    <th scope="col">Atualização</th>
+                                </tr>
+                            </thead>
+                            <tbody data-admin-db-collections>
+                                <tr class="admin-empty">
+                                    <td colspan="4">Carregando coleções...</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </article>
                 <article class="admin-panel admin-panel--surface" id="logs">
@@ -389,28 +658,14 @@
                         </div>
                         <div class="admin-support__column">
                             <h4>Pedidos internos</h4>
-                            <ul>
-                                <li>
-                                    <strong>Revisar novos cadastros</strong>
-                                    <span>Clientes aguardando aprovação interna</span>
-                                </li>
-                                <li>
-                                    <a href="#clientes"><strong>Ver clientes</strong></a>
-                                    <a href="#anuncios"><strong>Revisar anúncios</strong></a>
-                                </li>
+                            <ul data-admin-support-open>
+                                <li class="admin-empty">Carregando pendências...</li>
                             </ul>
                         </div>
                         <div class="admin-support__column">
                             <h4>Resolvido</h4>
-                            <ul>
-                                <li>
-                                    <strong>Atualização de banner</strong>
-                                    <span>Concluído ontem</span>
-                                </li>
-                                <li>
-                                    <strong>Recuperação de senha</strong>
-                                    <span>Concluído há 2 dias</span>
-                                </li>
+                            <ul data-admin-support-closed>
+                                <li class="admin-empty">Carregando resolvidos...</li>
                             </ul>
                         </div>
                     </div>

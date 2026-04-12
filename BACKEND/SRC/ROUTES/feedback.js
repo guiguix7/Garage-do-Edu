@@ -1,7 +1,8 @@
 import express from 'express';
 import { z } from 'zod';
 import { Mongo } from '../DB/db.js';
-import { authenticateToken } from '../MIDDLEWARE/auth.js';
+import { ObjectId } from 'mongodb';
+import { authenticateToken, checkRole } from '../MIDDLEWARE/auth.js';
 import { validateBody } from '../MIDDLEWARE/validate.js';
 import { writeAuditLog } from '../HELPERS/audit.js';
 
@@ -11,6 +12,10 @@ const feedbackSchema = z.object({
     rating: z.coerce.number().int().min(1).max(5),
     message: z.string().trim().min(10).max(1000),
     orderId: z.string().trim().min(3).max(80).optional()
+});
+
+const feedbackResponseSchema = z.object({
+    response: z.string().trim().min(3).max(1000)
 });
 
 feedbackRouter.get('/', async (req, res, next) => {
@@ -55,6 +60,7 @@ feedbackRouter.get('/', async (req, res, next) => {
                     id: item._id?.toString() || null,
                     rating: item.rating,
                     message: item.message,
+                    responded: Boolean(item.responded),
                     createdAt: item.createdAt
                 }))
             }
@@ -101,6 +107,33 @@ feedbackRouter.post('/', authenticateToken, validateBody(feedbackSchema), async 
             actorId: userId || null,
             actorRole: req.user?.role || null,
             targetId: result.insertedId.toString(),
+            req
+        });
+    } catch (error) {
+        next(error);
+    }
+});
+
+feedbackRouter.patch('/:id/respond', authenticateToken, checkRole('admin'), validateBody(feedbackResponseSchema), async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const response = await Mongo.db.collection('feedback').updateOne(
+            { _id: new ObjectId(id) },
+            { $set: { responded: true, response: req.body.response, respondedAt: new Date() } }
+        );
+
+        if (!response.matchedCount) {
+            return res.status(404).json({ success: false, statusCode: 404, message: 'Feedback not found.' });
+        }
+
+        res.json({ success: true, statusCode: 200, body: { id } });
+
+        void writeAuditLog({
+            action: 'feedback_respond',
+            actorId: req.user?.userId || null,
+            actorRole: req.user?.role || null,
+            targetId: id,
+            meta: { response: req.body.response },
             req
         });
     } catch (error) {
