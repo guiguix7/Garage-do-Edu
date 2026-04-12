@@ -56,37 +56,206 @@
 		</div>
 	</header>
 	<main class="ad-create">
-		<section class="ad-create__intro">
-			<h2>Criar anuncio</h2>
-			<p>Area exclusiva para parceiros cadastrarem novos anuncios.</p>
-		</section>
+		<div class="ad-creator__container">
+			<section class="ad-creator__header">
+				<h2>Criação de Anúncio</h2>
+				<p>Área exclusiva para parceiros e administradores cadastrarem novos anúncios.</p>
+				<div class="ad-creator__progress" role="progressbar" aria-valuenow="34" aria-valuemin="0"
+					aria-valuemax="100">
+					<span class="ad-creator__progress-bar" aria-hidden="true"></span>
+				</div>
+				<ol class="ad-creator__steps">
+					<li class="is-active">Dados do veículo</li>
+					<li>Detalhes</li>
+					<li>Publicação</li>
+				</ol>
+			</section>
+			<section class="card-bg">
+				<section class="ad-creator__layout">
+					<div class="ad-creator__form-panel">
+						<form class="ad-creator__form" data-ad-form data-auth-required="authenticated"
+							data-auth-roles="partner, client, admin"
+							data-auth-message="E necessario estar logado para enviar anuncios.">
+							<div class="ad-creator__alert auth-message" data-ad-message hidden></div>
 
-		<section class="ad-create__form">
-			<form data-ad-form data-auth-required="authenticated" data-auth-roles="partner, client, admin"
-				data-auth-message="E necessario estar logado para enviar anuncios.">
-				<div class="auth-message" data-ad-message hidden></div>
-				<label for="ad-title">Nome do veiculo</label>
-				<input id="ad-title" name="name" type="text" required placeholder="Ex: Ford Maverick GT 1974">
+							<div class="ad-creator__upload-zone">
+								<div class="ad-creator__upload-card">
+									<h3>Fotos do veículo</h3>
+									<p>Arraste e solte as imagens ou selecione no seu dispositivo.</p>
+									<input id="ad-images" name="images" type="file" multiple accept="image/*"
+										class="ad-creator__file-input">
+									<label for="ad-images" class="ad-creator__upload-label">Selecionar imagens</label>
+								</div>
+								<div class="ad-creator__upload-grid" aria-live="polite"></div>
+							</div>
 
-				<label for="ad-brand">Marca</label>
-				<input id="ad-brand" name="brand" type="text" required placeholder="Ex: Ford">
+							<div class="ad-creator__form-grid">
+								<div class="ad-creator__input-group">
+									<label for="ad-title">Nome do veículo</label>
+									<input id="ad-title" name="name" type="text" required
+										placeholder="Ex: Ford Maverick GT 1974" class="ad-creator__input">
+								</div>
 
-				<label for="ad-year">Ano</label>
-				<input id="ad-year" name="year" type="number" required min="1886" max="2030">
+								<div class="ad-creator__input-group ad-creator__select-group">
+									<label for="ad-brand">Marca</label>
+									<input id="ad-brand" name="brand" type="text" required placeholder="Ex: Ford"
+										class="ad-creator__input">
+								</div>
 
-				<label for="ad-color">Cor</label>
-				<input id="ad-color" name="color" type="text" required placeholder="Ex: Vermelho">
-				
-				<label for="ad-price">Preco</label>
-				<input id="ad-price" name="price" type="number" required min="0" step="0.01">
+								<div class="ad-creator__input-group ad-creator__select-group">
+									<label for="ad-year">Ano</label>
+									<input id="ad-year" name="year" type="number" required min="1886" max="2030"
+										class="ad-creator__input">
+								</div>
 
-				<label for="ad-description">Descricao</label>
-				<textarea id="ad-description" name="description" rows="4" required></textarea>
+								<div class="ad-creator__input-group">
+									<label for="ad-color">Cor</label>
+									<input id="ad-color" name="color" type="text" required placeholder="Ex: Vermelho"
+										class="ad-creator__input">
+								</div>
 
-				<button type="submit">Publicar anuncio</button>
-			</form>
-		</section>
+								<div class="ad-creator__input-group">
+									<label for="ad-price">Preco</label>
+									<input id="ad-price" name="price" type="number" required min="0" step="0.01"
+										class="ad-creator__input" placeholder="Ex: 150000">
+								</div>
+
+								<div class="ad-creator__input-group ad-creator__input-group--inline">
+									<input id="ad-available" name="available" type="checkbox"
+										class="ad-creator__checkbox">
+									<label for="ad-available">Disponível</label>
+								</div>
+
+								<div class="ad-creator__input-group">
+									<label for="ad-description">Descrição</label>
+									<textarea id="ad-description" name="description" rows="4" required
+										class="ad-creator__input"></textarea>
+								</div>
+
+								<div class="ad-creator__input-group">
+									<label for="ad-engine">Motor</label>
+									<input id="ad-engine" name="engine" type="text" placeholder="Ex: 2.0 Turbo"
+										class="ad-creator__input">
+								</div>
+
+								<div class="ad-creator__input-group">
+									<label for="ad-transmission">Transmissão</label>
+									<input id="ad-transmission" name="transmission" type="text" placeholder="Ex: Manual"
+										class="ad-creator__input">
+								</div>
+
+								<div class="ad-creator__input-group ad-creator__select-group">
+									<label for="ad-fuel">Tipo de combustível</label>
+									<input id="ad-fuel" name="fuel" type="text" placeholder="Ex: Gasolina"
+										class="ad-creator__input">
+								</div>
+
+								<div class="ad-creator__input-group">
+									<label for="ad-mileage">Quilometragem</label>
+									<input id="ad-mileage" name="mileage" type="number" placeholder="Ex: 50000"
+										class="ad-creator__input">
+								</div>
+
+								<div class="ad-creator__input-group">
+									<label for="ad-doors">Portas</label>
+									<input id="ad-doors" name="doors" type="number" placeholder="Ex: 4"
+										class="ad-creator__input">
+								</div>
+
+								<div class="ad-creator__input-group">
+									<label for="ad-seats">Assentos</label>
+									<input id="ad-seats" name="seats" type="number" placeholder="Ex: 5"
+										class="ad-creator__input">
+								</div>
+
+								<div class="ad-creator__input-group ad-creator__select-group">
+									<label for="ad-type">Tipo</label>
+									<input id="ad-type" name="type" type="text" placeholder="Ex: Sedan"
+										class="ad-creator__input">
+								</div>
+
+								<div class="ad-creator__input-group ad-creator__select-group">
+									<label for="ad-condition">Condição</label>
+									<input id="ad-condition" name="condition" type="text" placeholder="Ex: Seminovo"
+										class="ad-creator__input">
+								</div>
+
+								<div class="ad-creator__input-group">
+									<label for="ad-feature">Características</label>
+									<textarea id="ad-feature" name="features" rows="4"
+										placeholder="Ex: Ar condicionado, direção elétrica"
+										class="ad-creator__input"></textarea>
+								</div>
+							</div>
+
+							<div class="ad-creator__actions">
+								<button type="button" class="ad-creator__btn-secondary">Salvar rascunho</button>
+								<button type="submit" class="ad-creator__btn-primary">Publicar anuncio</button>
+							</div>
+						</form>
+					</div>
+
+					<aside class="ad-creator__summary-preview" aria-live="polite">
+						<h3>Preview do anúncio</h3>
+						<p>Os dados preenchidos vão aparecer aqui em tempo real.</p>
+						<div class="ad-creator__summary-list">
+							<div class="ad-creator__summary-item">
+								<span class="ad-creator__summary-label">Veículo</span>
+								<span class="ad-creator__summary-value">-</span>
+							</div>
+							<div class="ad-creator__summary-item">
+								<span class="ad-creator__summary-label">Preço</span>
+								<span class="ad-creator__summary-value">-</span>
+							</div>
+							<div class="ad-creator__summary-item">
+								<span class="ad-creator__summary-label">Status</span>
+								<span class="ad-creator__summary-value">-</span>
+							</div>
+						</div>
+					</aside>
+				</section>
+			</section>
+
+		</div>
 	</main>
+	<footer class="footer">
+		<div class="footer-grid">
+			<div class="footer-column">
+				<h3>FALE CONOSCO</h3>
+				<div class="contact-item"><span>Salto/SP</span></div>
+				<div class="contact-item"><a href="tel:+5511963152153">(11) 96315-2153</a></div>
+				<div class="contact-item"><a href="mailto:contato@garagedoedu.com">contato@garagedoedu.com</a></div>
+				<div class="contact-item"><a
+						href="https://wa.me/5511963152153?text=Ol%C3%A1%2C%20quero%20um%20site%20para%20minha%20marca"
+						target="_blank" rel="noopener">Quero um Site!</a></div>
+			</div>
+			<div class="footer-column">
+				<h3>SOBRE A GARAGE DO EDU</h3>
+				<p>A Garage do Edu reúne carros clássicos, com história e que carregam lembranças do Para-Choque ao
+					Paralamas.</p>
+				<p>Os carros que sempre estiveram presentes na vida das famílias ao redor do Brasil agora estão reunidos
+					em um só lugar.</p>
+			</div>
+			<div class="footer-column">
+				<h3>NEGÓCIOS:</h3>
+				<ul class="business-links">
+					<li><a href="help.html">&gt; Como anunciar</a></li>
+					<li><a href="help.html">&gt; Fale conosco</a></li>
+					<li><a href="help.html">&gt; Parceiros</a></li>
+					<li><a href="help.html">&gt; Publicidade</a></li>
+					<li><a href="help.html">&gt; Termos de Serviço</a></li>
+					<li><a href="help.html">&gt; Política de privacidade</a></li>
+				</ul>
+			</div>
+			<div class="copy">
+				<div class="footer-divider"></div>
+				<div class="grid">
+					<span>© 2026 Garage do Edu. Todos os direitos reservados.</span>
+					<span>Desenvolvido por Guilherme Andraz.</span>
+				</div>
+			</div>
+		</div>
+	</footer>
 	<script src="../SCRIPT/script.js" defer></script>
 </body>
 

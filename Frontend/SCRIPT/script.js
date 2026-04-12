@@ -1,3 +1,7 @@
+// ==============================
+// Inicializacao geral da pagina
+// - Orquestra a ordem das features para reduzir dependencias quebradas
+// ==============================
 document.addEventListener('DOMContentLoaded', async () => {
 	const dom = collectDomReferences();
 	const state = createInitialState(dom);
@@ -26,6 +30,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 	initializeAdCreateForm(dom);
 });
 
+// ==============================
+// Configuracoes e constantes globais
+// - Centraliza endpoints, chaves e defaults usados no site
+// ==============================
 const WHATSAPP_NUMBER = '5511963152153';
 const WHATSAPP_BASE_URL = `https://wa.me/${WHATSAPP_NUMBER}`;
 const DEFAULT_WHATSAPP_MESSAGE = 'Ol%C3%A1%2C%20estou%20no%20site%20da%20Garage%20do%20Edu%20e%20quero%20falar%20com%20voc%C3%AAs.';
@@ -46,7 +54,10 @@ const CURRENCY_FORMATTER = new Intl.NumberFormat('pt-BR', {
 	currency: 'BRL'
 });
 
-// Utilitários de autenticação e sessão
+// ==============================
+// Autenticacao e sessao
+// - Resolve endpoints, tokens, sessoes e comunicacao autenticada
+// ==============================
 function getAuthConfig(dom) {
 	const candidate = dom.body?.dataset.authEndpoint?.trim() ?? AUTH_DEFAULT_ENDPOINT;
 	const normalized = candidate.replace(/\/$/, '');
@@ -60,6 +71,10 @@ function getAuthConfig(dom) {
 	};
 }
 
+// ==============================
+// Manutencao e bloqueio de paginas
+// - Impede acesso quando o back-end sinaliza manutencao
+// ==============================
 function getMaintenanceEndpoint(dom) {
 	const authConfig = getAuthConfig(dom);
 	const base = authConfig.base.replace(/\/auth$/, '');
@@ -117,7 +132,7 @@ function getMaintenancePageKey(pathname) {
 }
 
 function showMaintenanceMessage(pageKey) {
-	const message = 'Pagina temporariamente indisponivel para manutencao.';
+	const message = 'Pagina temporariamente indisponivel para manutenção.';
 	const detailMap = {
 		home: 'A pagina inicial esta em manutenção.',
 		ads: 'A area de anuncios esta em manutenção.',
@@ -299,6 +314,10 @@ async function fetchWithAuth(url, options = {}) {
 	return response;
 }
 
+// ==============================
+// Inventario e normalizacao de dados
+// - Define endpoints e adapta payloads para o front
+// ==============================
 function getInventoryConfig(dom) {
 	const candidate = dom.body?.dataset.inventoryEndpoint?.trim() ?? INVENTORY_DEFAULT_ENDPOINT;
 	const normalized = candidate.replace(/\/$/, '') || INVENTORY_DEFAULT_ENDPOINT;
@@ -492,6 +511,21 @@ function updateAccountMenuItems(items, state) {
 	});
 }
 
+// Atualiza o label do trigger conforme logado
+
+const currentUserRole = typeof state !== 'undefined' ? state?.user?.role : undefined;
+const loginLink = document.getElementById('login-link');
+if (loginLink) {
+	if (currentUserRole && currentUserRole !== 'admin' && currentUserRole !== 'client' && currentUserRole !== 'partner') {
+		loginLink.innerHTML = `<li class="submenu-item" role="none" data-account-item data-account-visible="guest" id="login-link">
+                                <a role="menuitem" href="Frontend/HTML/login.html">Login</a>
+                            </li>`;
+	} else {
+		loginLink.remove();
+	}
+}
+// Atualiza o label do trigger de conta com o nome do usuário e role, se autenticado.
+
 function updateAccountTriggerLabel(trigger, labelEl, defaultLabel, state) {
 	const baseLabel = trigger.dataset.accountBaseLabel ?? defaultLabel ?? trigger.textContent.trim();
 	const target = labelEl ?? trigger;
@@ -499,7 +533,11 @@ function updateAccountTriggerLabel(trigger, labelEl, defaultLabel, state) {
 
 	if (state.status === 'authenticated' && state.user?.username) {
 		const roleLabel = state.user?.role ? ` (${state.user.role})` : '';
-		nextLabel = `${baseLabel} - ${state.user.username}${roleLabel}`;
+		nextLabel = `${state.user.username}`;
+	}
+	if (state.status === 'authenticated' && state.user?.role !== 'client') {
+		const roleLabel = state.user?.role ? ` (${state.user.role})` : '';
+		nextLabel = `${state.user.username}${roleLabel}`;
 	}
 
 	target.textContent = nextLabel;
@@ -522,6 +560,10 @@ function updateUI(dom, state) {
 	updateAccountTriggerLabel(trigger, label, defaultLabel, state);
 }
 
+// ==============================
+// Mapeamento de DOM
+// - Centraliza seletores para reduzir queries repetidas
+// ==============================
 function collectDomReferences() {
 	const brandContainer = document.querySelector('[data-brand-select]');
 	const brandPanel = brandContainer?.querySelector('[data-brand-panel]');
@@ -618,6 +660,10 @@ function collectDomReferences() {
 	};
 }
 
+// ==============================
+// Estado inicial da UI
+// - Guarda filtros, inventario e UI state compartilhado
+// ==============================
 function createInitialState(dom) {
 	const defaultFilter =
 		dom.filters.categoryButtons.find((button) => button.classList.contains('active'))?.dataset.filter ?? 'all';
@@ -726,9 +772,7 @@ async function initializeInventoryData(dom, state) {
 		if (dom.inventoryEmpty) {
 			dom.inventoryEmpty.hidden = false;
 			dom.inventoryEmpty.textContent = 'Não foi possível carregar o estoque. Tente novamente mais tarde.';
-		}
-		if (statusEl) {
-			setStatus('Não foi possível carregar o estoque. Tente novamente mais tarde.', 'error');
+			setStatus('Ocoreu um erro', 'error');
 		}
 	} finally {
 		state.inventory.isLoading = false;
@@ -1156,7 +1200,10 @@ function prepareLazyInventoryCards(dom) {
 	});
 }
 
-// Inventory setup -------------------------------------------------------------
+// ==============================
+// Inventario: setup e filtros
+// - Carrega cards, aplica filtros e controla paginação
+// ==============================
 function initializeInventory(dom, state) {
 	setupLoadMoreButton(dom, state);
 	setupCategoryFilters(dom, state);
@@ -1462,7 +1509,10 @@ function setupSearchControls(dom, state) {
 	}
 }
 
-// Brand filter helpers -------------------------------------------------------
+// ==============================
+// Filtros por marca
+// - Gerencia selecao, resumo e painel acessivel
+// ==============================
 function setBrandsToAll(brandDom, state) {
 	state.selectedBrands = new Set(['all']);
 	brandDom.checkboxes.forEach((checkbox) => {
@@ -1561,7 +1611,10 @@ function getBrandLabel(value, brandDom) {
 	return checkbox?.dataset.brandLabel ?? value;
 }
 
-// Inventory utilities --------------------------------------------------------
+// ==============================
+// Inventario: utilitarios
+// - Suporte a lazy cards, ordenacao e busca
+// ==============================
 
 function hideLoadMoreContainer(dom) {
 	if (!dom.loadMoreButton) {
@@ -1735,7 +1788,10 @@ function normalizeText(value) {
 	return value ? value.toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') : '';
 }
 
-// Reveal animations ----------------------------------------------------------
+// ==============================
+// Animacoes de entrada
+// - Controla reveal ao rolar mantendo performance
+// ==============================
 function initializeRevealAnimations(dom) {
 	if (!dom.revealElements.length) {
 		return;
@@ -1762,7 +1818,10 @@ function initializeRevealAnimations(dom) {
 	});
 }
 
-// Navigation -----------------------------------------------------------------
+// ==============================
+// Navegacao e scroll suave
+// - Ajusta offset para header fixo
+// ==============================
 
 function initializeNavigation(dom) {
 	if (!dom.navAnchors.length) {
@@ -1803,7 +1862,10 @@ function getHeaderStackHeight(dom) {
 	return topHeight + mainHeight;
 }
 
-// Header behaviour -----------------------------------------------------------
+// ==============================
+// Header: comportamento ao scroll
+// - Esconde header-top conforme direcao do scroll
+// ==============================
 
 function initializeHeader(dom, state) {
 	const { headerTop } = dom;
@@ -1837,7 +1899,10 @@ function initializeHeader(dom, state) {
 	window.addEventListener('scroll', handleScroll, { passive: true });
 }
 
-// Account menu ---------------------------------------------------------------
+// ==============================
+// Conta: menu e estado autenticado
+// - Sincroniza rotulos e itens conforme sessao
+// ==============================
 
 function initializeAccountMenu(dom) {
 	const { menu, trigger, submenu, items, label, logout } = dom.account;
@@ -1845,8 +1910,7 @@ function initializeAccountMenu(dom) {
 
 	const authConfig = getAuthConfig(dom);
 	const defaultLabel = hasMenu
-		? trigger.dataset.accountBaseLabel ?? label?.textContent?.trim() ?? trigger.textContent.trim()
-		: 'Minha Conta';
+		? trigger.dataset.accountBaseLabel ?? label?.textContent?.trim() ?? trigger.textContent.trim() : 'Minha Conta';
 	const safeItems = hasMenu && Array.isArray(items) ? items : [];
 	const pageBody = dom.body instanceof HTMLElement ? dom.body : document.body;
 
@@ -1992,7 +2056,10 @@ function initializeAccountMenu(dom) {
 	});
 }
 
-// Painel de conta -----------------------------------------------------------
+// ==============================
+// Conta: painel com detalhes
+// - Exibe dados do usuario logado
+// ==============================
 
 function initializeAccountPanel(dom) {
 	const panel = dom.accountPanel?.root;
@@ -2101,7 +2168,10 @@ function initializeAccountPanel(dom) {
 	});
 }
 
-// Auth guards ----------------------------------------------------------------
+// ==============================
+// Guards de autenticacao
+// - Bloqueia interacoes nao autorizadas e redireciona
+// ==============================
 
 function initializeAuthGuards(dom) {
 	const restrictedElements = Array.isArray(dom.auth?.restrictedElements)
@@ -2244,7 +2314,10 @@ function initializeAuthGuards(dom) {
 	});
 }
 
-// Cookie consent ------------------------------------------------------------
+// ==============================
+// Consentimento de cookies
+// - Controla banner e persistencia da escolha
+// ==============================
 
 function initializeCookieConsent(dom) {
 	const container = dom.cookie?.container instanceof HTMLElement ? dom.cookie.container : null;
@@ -2370,7 +2443,10 @@ function initializeCookieConsent(dom) {
 	}
 }
 
-// Feedback form -------------------------------------------------------------
+// ==============================
+// Formulario de feedback
+// - Validacao basica e envio autenticado
+// ==============================
 
 function getFeedbackConfig(dom) {
 	const candidate = dom.body?.dataset.feedbackEndpoint?.trim();
@@ -2439,7 +2515,10 @@ function initializeFeedbackForm(dom) {
 	});
 }
 
-// Ad create form ------------------------------------------------------------
+// ==============================
+// Criacao de anuncio
+// - Valida campos e envia para inventario ou pendencia
+// ==============================
 
 function initializeAdCreateForm(dom) {
 	const form = document.querySelector('[data-ad-form]');
@@ -2522,7 +2601,10 @@ function initializeAdCreateForm(dom) {
 	});
 }
 
-// Theme toggle ---------------------------------------------------------------
+// ==============================
+// Tema (claro/escuro)
+// - Aplica tema salvo ou preferencia do SO
+// ==============================
 
 function initializeTheme(dom) {
 	const { themeToggle } = dom;
@@ -2558,7 +2640,10 @@ function initializeTheme(dom) {
 	});
 }
 
-// Hero carousel --------------------------------------------------------------
+// ==============================
+// Hero carousel
+// - Loop automatico com pausa em abas inativas
+// ==============================
 
 function initializeHeroCarousel(dom, state) {
 	const { heroSlides } = dom;
@@ -2604,7 +2689,10 @@ function initializeHeroCarousel(dom, state) {
 	startCarousel();
 }
 
-// Inventory modal ------------------------------------------------------------
+// ==============================
+// Modal de inventario
+// - Preenche dados, controla foco e fecha com Esc
+// ==============================
 function initializeInventoryModal(dom) {
 	const { modal } = dom;
 	if (!modal.root || !modal.dialog || !dom.carCards.length) {
@@ -2746,7 +2834,10 @@ function initializeInventoryModal(dom) {
 	});
 }
 
-// Miscellaneous interactions -------------------------------------------------
+// ==============================
+// Interacoes auxiliares
+// - WhatsApp, planos e atalhos de busca
+// ==============================
 
 function initializeUtilityInteractions(dom) {
 	setupPlanButtons(dom);

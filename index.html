@@ -63,26 +63,25 @@
                                 class="icone-seta"><span data-account-label id="text-ma">Minha Conta</span>
                         </button>
                         <ul class="submenu" role="menu" data-account-menu>
-                            <!-- Guest only -->
-                            <li class="submenu-item" role="none" data-account-item data-account-visible="guest">
+                            <li class="submenu-item" role="none" data-account-item data-account-visible="guest" id="login-link">
                                 <a role="menuitem" href="Frontend/HTML/login.html">Login</a>
                             </li>
                             <!-- Authenticated users -->
                             <li class="submenu-item" role="none" data-account-item data-account-visible="authenticated">
-                                <a href="#"><button type="button" role="menuitem" data-account-logout
-                                        id="logout-button" hidden>Logout</button></a>
+                                <a href="#"><button type="button" role="menuitem" data-account-logout id="logout-button"
+                                        hidden>Logout</button></a>
                             </li>
                             <!-- Adicionar html via js quando o role for definido -->
                             <li class="submenu-item" role="none" data-account-item data-account-visible="authenticated">
-                                <a role="menuitem" href="#" data-auth-required="authenticated"
-                                    data-account-panel-toggle hidden>Minha Conta</a>
+                                <a role="menuitem" href="#" data-auth-required="authenticated" data-account-panel-toggle
+                                    hidden>Minha Conta</a>
                             </li>
                             <!-- Partner's Account Only -->
                             <li class="submenu-item" role="none" data-account-item data-account-visible="authenticated"
                                 data-account-role="partner">
-                                <a role="menuitem" href="Frontend/HTML/ad_create.html"
-                                    data-auth-required="authenticated" data-auth-roles="partner"
-                                    data-auth-fallback="Frontend/HTML/login.html" hidden>Meus Anúncios (Parceiro)</a>
+                                <a role="menuitem" href="Frontend/HTML/partner.html" data-auth-required="authenticated"
+                                    data-auth-roles="partner" data-auth-fallback="Frontend/HTML/login.html" hidden>Meus
+                                    Anúncios (Parceiro)</a>
                             </li>
                             <!-- Admin's Account Only -->
                             <li class="submenu-item" role="none" data-account-item data-account-visible="authenticated"

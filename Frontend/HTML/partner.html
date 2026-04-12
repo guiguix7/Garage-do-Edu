@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Garage do Edu - Pagina de gerenciamento de anúncios para parceiros.">
+    <meta name="keywords" content="anúncio carro clássico, venda de carros antigos, Garage do Edu, estoque premium">
+    <meta name="author" content="Desenvolvedor: Guilherme Andraz, Dono do site: Eduardo Arcos">
+    <meta property="og:title" content="Anúncio - Garage do Edu">
+    <meta property="og:description"
+        content="Gerencie seus anúncios de carros clássicos na Garage do Edu. Área exclusiva para parceiros cadastrados.">
+    <meta property="og:type" content="website">
+    <title id="page-title">Painel do Parceiro - Garage do Edu</title>
+    <link rel="stylesheet" href="../CSS/style.css">
+    <link rel="stylesheet" href="../CSS/partner.css">
+</head>
+
+<body data-auth-endpoint="http://localhost:3000/auth" data-inventory-endpoint="http://localhost:3000/cars"
+    data-login-page="login.html" data-inventory-detail="HTML/anuncio.html">
+    <header>
+        <div class="header-top">
+            <div class="social-header">
+                <a href="https://www.instagram.com/garage_do_edu/" target="_blank" rel="noopener"><img
+                        src="../SRC/ASSETS/IMG/instagram.png" alt="Logo do Instagram" class="logo-sociais"></a>
+                <a href="https://www.facebook.com/p/Garage-do-Edu-61550883566176/" target="_blank" rel="noopener"><img
+                        src="../SRC/ASSETS/IMG/facebook.png" alt="Logo do Facebook" class="logo-sociais"></a>
+                <a href="https://www.tiktok.com/@garage_do_edu" target="_blank" rel="noopener"><img
+                        src="../SRC/ASSETS/IMG/tiktok.png" alt="Logo do TikTok" class="logo-sociais"></a>
+            </div>
+            <div class="info-header">
+                <span class="info">Atendimento em Salto/SP - Retirada local | Trocas aceitas</span>
+                <div class="phone">
+                    <a href="https://wa.me/5511963152153" target="_blank" rel="noopener"><img
+                            src="../SRC/ASSETS/IMG/bolha-de-bate-papo.png" alt="Icone do WhatsApp"
+                            class="logo-sociais"></a><span>11 96315-2153</span>
+                </div>
+            </div>
+            <div class="links-header">
+                <a href="../../index.html">Inicio</a>
+            </div>
+        </div>
+        <div class="header">
+            <div class="logo-nome">
+                <img src="../SRC/ASSETS/IMG/garage do edu logo.jpg" alt="Logo da Garage do Edu" class="logo">
+                <h1>Garage do Edu</h1>
+            </div>
+            <nav class="header-nav" aria-label="Navegacao principal">
+                <ul>
+                    <li><a href="../../index.html#ads">Anuncios</a></li>
+                    <li><a href="../../index.html#destaques">Parceiros</a></li>
+                    <li><a href="../../index.html#vendidos">Vendidos</a></li>
+                    <li><a href="../../index.html#sobre">Sobre Nos</a></li>
+                    <li><a href="../../index.html#contato">Contato</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+    <main class="partner-dashboard" data-partner-dashboard>
+        <section class="partner-hero" aria-labelledby="partner-title">
+            <div class="partner-hero__content">
+                <span class="partner-hero__eyebrow">Painel do parceiro</span>
+                <h2 id="partner-title">Meus anúncios clássicos</h2>
+                <p>Crie, edite e acompanhe seus anúncios publicados na Garage do Edu em um painel único.</p>
+                <div class="partner-hero__actions">
+                    <a href="ad_create.html">
+                        <button class="partner-button" type="button" style="cursor: pointer;" data-partner-new>+ Novo anúncio</button>
+                    </a>
+                    <button class="partner-button partner-button--ghost" type="button" style="cursor: pointer;"
+                        data-partner-refresh>Atualizar</button>
+                </div>
+                <div class="partner-hero__status" data-partner-status hidden></div>
+            </div>
+            <div class="partner-hero__panel">
+                <div class="partner-hero__tile">
+                    <span>Total de anúncios</span>
+                    <strong data-partner-total>0</strong>
+                </div>
+                <div class="partner-hero__tile">
+                    <span>Disponíveis</span>
+                    <strong data-partner-available>0</strong>
+                </div>
+                <div class="partner-hero__tile">
+                    <span>Indisponíveis</span>
+                    <strong data-partner-unavailable>0</strong>
+                </div>
+                <div class="partner-hero__tile">
+                    <span>Esperando aprovação</span>
+                    <strong data-partner-pending>0</strong>
+                </div>
+            </div>
+        </section>
+
+        <section class="partner-panel" aria-label="Ferramentas de anúncios">
+            <header class="partner-panel__header">
+                <div>
+                    <h3>Meus anúncios</h3>
+                    <p>Confira os veículos publicados e mantenha seus dados sempre atualizados.</p>
+                </div>
+                <div class="partner-panel__filters">
+                    <label>
+                        <span>Buscar</span>
+                        <input type="search" placeholder="Pesquisar por nome ou marca" data-partner-search>
+                    </label>
+                    <label>
+                        <span>Status</span>
+                        <select data-partner-filter>
+                            <option value="">Todos</option>
+                            <option value="available">Disponíveis</option>
+                            <option value="unavailable">Indisponíveis</option>
+                        </select>
+                    </label>
+                </div>
+            </header>
+            <div class="partner-cards" data-partner-list>
+                <div class="partner-empty" data-partner-empty>Carregando anúncios...</div>
+            </div>
+            <template data-partner-card-template>
+                <article class="partner-card">
+                    <div class="partner-card__header">
+                        <div>
+                            <span class="partner-card__eyebrow" data-card-brand></span>
+                            <h4 data-card-title></h4>
+                        </div>
+                        <span class="partner-card__badge" data-card-status></span>
+                    </div>
+                    <div class="partner-card__details">
+                        <span data-card-year></span>
+                        <span data-card-price></span>
+                        <span data-card-updated></span>
+                    </div>
+                    <div class="partner-card__actions">
+                        <button class="partner-link" type="button" data-card-edit>Editar</button>
+                        <a class="partner-link" data-card-view target="_blank" rel="noopener">Ver anúncio</a>
+                    </div>
+                </article>
+            </template>
+        </section>
+    </main>
+    <footer class="footer">
+        <div class="footer-grid">
+            <div class="footer-column">
+                <h3>FALE CONOSCO</h3>
+                <div class="contact-item"><span>Salto/SP</span></div>
+                <div class="contact-item"><a href="tel:+5511963152153">(11) 96315-2153</a></div>
+                <div class="contact-item"><a href="mailto:contato@garagedoedu.com">contato@garagedoedu.com</a></div>
+                <div class="contact-item"><a
+                        href="https://wa.me/5511963152153?text=Ol%C3%A1%2C%20quero%20um%20site%20para%20minha%20marca"
+                        target="_blank" rel="noopener">Quero um Site!</a></div>
+            </div>
+            <div class="footer-column">
+                <h3>SOBRE A GARAGE DO EDU</h3>
+                <p>A Garage do Edu reúne carros clássicos, com história e que carregam lembranças do Para-Choque ao
+                    Paralamas.</p>
+                <p>Os carros que sempre estiveram presentes na vida das famílias ao redor do Brasil agora estão reunidos
+                    em um só lugar.</p>
+            </div>
+            <div class="footer-column">
+                <h3>NEGÓCIOS:</h3>
+                <ul class="business-links">
+                    <li><a href="help.html">&gt; Como anunciar</a></li>
+                    <li><a href="help.html">&gt; Fale conosco</a></li>
+                    <li><a href="help.html">&gt; Parceiros</a></li>
+                    <li><a href="help.html">&gt; Publicidade</a></li>
+                    <li><a href="help.html">&gt; Termos de Serviço</a></li>
+                    <li><a href="help.html">&gt; Política de privacidade</a></li>
+                </ul>
+            </div>
+            <div class="copy">
+                <div class="footer-divider"></div>
+                <div class="grid">
+                    <span>© 2026 Garage do Edu. Todos os direitos reservados.</span>
+                    <span>Desenvolvido por Guilherme Andraz.</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <script src="../SCRIPT/script.js" defer></script>
+    <script src="../SCRIPT/partner.js" defer></script>
+</body>
+
+
+</html>
