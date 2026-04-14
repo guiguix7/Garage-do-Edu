@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon SRC/JS/index.js"
+    "dev": "nodemon SRC/JS/server.js"
   },
   "keywords": [],
   "author": "",
@@ -16,6 +16,7 @@
   "dependencies": {
     "bcrypt": "^5.1.1",
     "cors": "^2.8.6",
+    "cookie-parser": "^1.4.6",
     "express-rate-limit": "^7.4.0",
     "crypto": "^1.0.1",
     "dotenv": "^17.2.3",

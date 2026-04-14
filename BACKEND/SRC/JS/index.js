@@ -58,10 +58,12 @@ app.use(
 );
 app.use(cors(corsOptions)); // Middleware para habilitar CORS com as opções definidas
 
-// Função principal para iniciar o servidor
-async function main() {
-    const hostname = 'localhost';
-    const port = process.env.PORT || 3000;
+let initialized = false;
+
+export async function initApp() {
+    if (initialized) {
+        return;
+    }
 
     if (!process.env.MONGO_CS || !process.env.MONGO_DB_NAME) {
         throw new Error('Missing MongoDB environment variables (MONGO_CS, MONGO_DB_NAME).');
@@ -99,7 +101,6 @@ async function main() {
         }
     });
 
-
     // Rotas PÚBLICAS (sem autenticação)
     app.use('/auth', authRouter);
     app.use('/cars', carRouter);
@@ -121,14 +122,21 @@ async function main() {
         });
     });
 
-    app.listen(port, () => {
-        console.log(`Server running at http://${hostname}:${port}/`);
-        console.log('Server Start Successfully!');
-    });
+    initialized = true;
 }
 
-// Chama a função main
-main().catch((error) => {
-    console.error('Failed to start server:', error);
-    process.exit(1);
-});
+export { app };
+
+export default async function handler(req, res) {
+    try {
+        await initApp();
+        return app(req, res);
+    } catch (error) {
+        console.error('Failed to initialize server:', error);
+        res.status(500).json({
+            success: false,
+            statusCode: 500,
+            message: 'Server failed to initialize.'
+        });
+    }
+}
